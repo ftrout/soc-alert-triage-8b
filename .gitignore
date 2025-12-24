@@ -175,6 +175,7 @@ logs/
 # Secrets
 .env.local
 .env.*.local
+.devcontainer/.env
 secrets.yaml
 credentials.json
 
