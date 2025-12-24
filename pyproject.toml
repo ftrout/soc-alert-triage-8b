@@ -85,10 +85,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/fmt0816/soc-triage-agent"
-Documentation = "https://github.com/fmt0816/soc-triage-agent#readme"
-Repository = "https://github.com/fmt0816/soc-triage-agent"
-Issues = "https://github.com/fmt0816/soc-triage-agent/issues"
+Homepage = "https://github.com/ftrout/soc-triage-agent"
+Documentation = "https://github.com/ftrout/soc-triage-agent#readme"
+Repository = "https://github.com/ftrout/soc-triage-agent"
+Issues = "https://github.com/ftrout/soc-triage-agent/issues"
 
 [project.scripts]
 soc-triage-generate = "soc_triage_agent.data_generator:main"

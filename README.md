@@ -25,7 +25,7 @@ SOC Triage Agent helps security analysts by providing consistent, expert-level t
 
 ```bash
 # Clone the repository
-git clone https://github.com/fmt0816/soc-triage-agent.git
+git clone https://github.com/ftrout/soc-triage-agent.git
 cd soc-triage-agent
 
 # Install the package
@@ -219,7 +219,7 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
   title = {SOC Triage Agent: Fine-tuned LLM for Security Alert Triage},
   author = {SOC Triage Agent Contributors},
   year = {2025},
-  url = {https://github.com/fmt0816/soc-triage-agent}
+  url = {https://github.com/ftrout/soc-triage-agent}
 }
 ```
 

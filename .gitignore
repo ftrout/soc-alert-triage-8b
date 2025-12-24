@@ -184,5 +184,6 @@ credentials.json
 *.tar.gz
 *.tar
 *.7z
-.ruff_cache/
+
+# Linter cache
 .ruff_cache/
