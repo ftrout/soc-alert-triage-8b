@@ -6,21 +6,17 @@
   },
   "runArgs": [
     "--gpus", "all",
-    "--shm-size", "16g",
-    "--ulimit", "memlock=-1",
-    "--ulimit", "stack=67108864"
+    "--shm-size", "16g"
   ],
   "containerEnv": {
     "NVIDIA_VISIBLE_DEVICES": "all",
     "NVIDIA_DRIVER_CAPABILITIES": "compute,utility",
     "TRANSFORMERS_CACHE": "/workspace/.cache/huggingface",
     "HF_HOME": "/workspace/.cache/huggingface",
-    "TORCH_HOME": "/workspace/.cache/torch",
-    "WANDB_DIR": "/workspace/.cache/wandb"
+    "TORCH_HOME": "/workspace/.cache/torch"
   },
   "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.cache/huggingface,target=/workspace/.cache/huggingface,type=bind,consistency=cached"
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
   ],
   "workspaceFolder": "/workspace",
   "customizations": {
@@ -31,25 +27,17 @@
         "ms-python.black-formatter",
         "charliermarsh.ruff",
         "ms-toolsai.jupyter",
-        "GitHub.copilot",
         "redhat.vscode-yaml",
         "tamasfe.even-better-toml"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/opt/conda/bin/python",
-        "python.formatting.provider": "black",
         "editor.formatOnSave": true,
-        "python.linting.enabled": true,
-        "python.linting.ruffEnabled": true,
         "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
-  "postCreateCommand": "pip install -e '.[train,dev]' && huggingface-cli login --token ${HF_TOKEN:-''} || true",
-  "postStartCommand": "nvidia-smi",
-  "remoteUser": "root",
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
-  }
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "nvidia-smi || echo 'GPU not available'",
+  "remoteUser": "root"
 }
