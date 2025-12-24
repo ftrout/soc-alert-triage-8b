@@ -588,9 +588,8 @@ class SecurityAlertGenerator:
 
         """
         self.seed = seed
-        if seed is not None:
-            random.seed(seed)
-
+        # Use a per-instance Random object for reproducibility
+        self._rng = random.Random(seed)
         self.templates = AlertTemplates()
         self._alert_counter = 0
 
@@ -598,35 +597,35 @@ class SecurityAlertGenerator:
         """Generate a random IP address."""
         if internal:
             prefixes = ["10.", "172.16.", "192.168."]
-            prefix = random.choice(prefixes)
+            prefix = self._rng.choice(prefixes)
             if prefix == "10.":
-                return f"10.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+                return f"10.{self._rng.randint(0,255)}.{self._rng.randint(0,255)}.{self._rng.randint(1,254)}"
             elif prefix == "172.16.":
                 return (
-                    f"172.{random.randint(16,31)}.{random.randint(0,255)}.{random.randint(1,254)}"
+                    f"172.{self._rng.randint(16,31)}.{self._rng.randint(0,255)}.{self._rng.randint(1,254)}"
                 )
             else:
-                return f"192.168.{random.randint(0,255)}.{random.randint(1,254)}"
+                return f"192.168.{self._rng.randint(0,255)}.{self._rng.randint(1,254)}"
         else:
-            return f"{random.randint(1,223)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+            return f"{self._rng.randint(1,223)}.{self._rng.randint(0,255)}.{self._rng.randint(0,255)}.{self._rng.randint(1,254)}"
 
     def _generate_hash(self, hash_type: str = "sha256") -> str:
         """Generate a random hash."""
         lengths = {"md5": 32, "sha1": 40, "sha256": 64}
         length = lengths.get(hash_type, 64)
-        return "".join(random.choices("0123456789abcdef", k=length))
+        return "".join(self._rng.choices("0123456789abcdef", k=length))
 
     def _generate_domain(self, suspicious: bool = False) -> str:
         """Generate a random domain name."""
         if suspicious:
             tlds = [".xyz", ".top", ".club", ".info", ".tk", ".ml"]
-            name_len = random.randint(8, 16)
+            name_len = self._rng.randint(8, 16)
         else:
             tlds = [".com", ".net", ".org", ".io", ".co"]
-            name_len = random.randint(5, 12)
+            name_len = self._rng.randint(5, 12)
 
-        name = "".join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=name_len))
-        return name + random.choice(tlds)
+        name = "".join(self._rng.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=name_len))
+        return name + self._rng.choice(tlds)
 
     def _generate_user_context(self) -> UserContext:
         """Generate user context information."""
@@ -691,24 +690,24 @@ class SecurityAlertGenerator:
             "Berlin",
         ]
 
-        first = random.choice(first_names)
-        last = random.choice(last_names)
+        first = self._rng.choice(first_names)
+        last = self._rng.choice(last_names)
 
         return UserContext(
             username=f"{first}.{last}",
             email=f"{first}.{last}@company.com",
-            department=random.choice(departments),
-            role=random.choice(roles),
-            location=random.choice(locations),
-            risk_level=random.choices(["low", "medium", "high"], weights=[0.6, 0.3, 0.1])[0],
-            is_vip=random.random() < 0.1,
-            employment_status=random.choices(
+            department=self._rng.choice(departments),
+            role=self._rng.choice(roles),
+            location=self._rng.choice(locations),
+            risk_level=self._rng.choices(["low", "medium", "high"], weights=[0.6, 0.3, 0.1])[0],
+            is_vip=self._rng.random() < 0.1,
+            employment_status=self._rng.choices(
                 ["active", "notice_period", "terminated", "contractor"],
                 weights=[0.85, 0.05, 0.02, 0.08],
             )[0],
-            account_age_days=random.randint(30, 3650),
-            last_training_days=random.randint(0, 365),
-            previous_incidents=random.choices([0, 1, 2, 3], weights=[0.7, 0.2, 0.07, 0.03])[0],
+            account_age_days=self._rng.randint(30, 3650),
+            last_training_days=self._rng.randint(0, 365),
+            previous_incidents=self._rng.choices([0, 1, 2, 3], weights=[0.7, 0.2, 0.07, 0.03])[0],
         )
 
     def _generate_asset_context(self) -> AssetContext:
@@ -744,7 +743,7 @@ class SecurityAlertGenerator:
             "Research",
         ]
 
-        asset_type = random.choice(asset_types)
+        asset_type = self._rng.choice(asset_types)
         prefix = {
             "workstation": "WS",
             "server": "SRV",
@@ -754,22 +753,22 @@ class SecurityAlertGenerator:
         }.get(asset_type, "HOST")
 
         return AssetContext(
-            hostname=f"{prefix}-{random.randint(100, 999)}",
+            hostname=f"{prefix}-{self._rng.randint(100, 999)}",
             asset_id=f"ASSET-{uuid.uuid4().hex[:8].upper()}",
             asset_type=asset_type,
-            operating_system=random.choice(os_options),
-            criticality=random.choices(
+            operating_system=self._rng.choice(os_options),
+            criticality=self._rng.choices(
                 ["critical", "high", "medium", "low"], weights=[0.1, 0.25, 0.45, 0.2]
             )[0],
-            data_classification=random.choices(
+            data_classification=self._rng.choices(
                 ["public", "internal", "confidential", "restricted"], weights=[0.2, 0.4, 0.3, 0.1]
             )[0],
-            patch_status=random.choices(
+            patch_status=self._rng.choices(
                 ["current", "behind", "critical_missing"], weights=[0.6, 0.3, 0.1]
             )[0],
-            last_scan_days=random.randint(0, 30),
-            owner=f"{random.choice(['john', 'jane', 'admin', 'system'])}.{random.choice(['smith', 'doe', 'admin'])}",
-            business_unit=random.choice(business_units),
+            last_scan_days=self._rng.randint(0, 30),
+            owner=f"{self._rng.choice(['john', 'jane', 'admin', 'system'])}.{self._rng.choice(['smith', 'doe', 'admin'])}",
+            business_unit=self._rng.choice(business_units),
         )
 
     def _generate_network_context(self, external_threat: bool = False) -> NetworkContext:
@@ -781,34 +780,34 @@ class SecurityAlertGenerator:
         return NetworkContext(
             source_ip=self._generate_ip(internal=not external_threat),
             destination_ip=(
-                self._generate_ip(internal=random.random() > 0.5) if random.random() > 0.3 else None
+                self._generate_ip(internal=self._rng.random() > 0.5) if self._rng.random() > 0.3 else None
             ),
             source_zone=(
-                "external" if external_threat else random.choice(["internal", "vpn", "guest"])
+                "external" if external_threat else self._rng.choice(["internal", "vpn", "guest"])
             ),
-            destination_zone=random.choice(zones) if random.random() > 0.3 else None,
-            protocol=random.choice(protocols),
-            port=random.choice([22, 80, 443, 445, 3389, 8080, 8443, None]),
-            bytes_transferred=random.randint(1000, 100000000) if random.random() > 0.5 else None,
-            geo_location=random.choice(countries) if random.random() > 0.4 else None,
-            is_encrypted=random.random() > 0.3,
+            destination_zone=self._rng.choice(zones) if self._rng.random() > 0.3 else None,
+            protocol=self._rng.choice(protocols),
+            port=self._rng.choice([22, 80, 443, 445, 3389, 8080, 8443, None]),
+            bytes_transferred=self._rng.randint(1000, 100000000) if self._rng.random() > 0.5 else None,
+            geo_location=self._rng.choice(countries) if self._rng.random() > 0.4 else None,
+            is_encrypted=self._rng.random() > 0.3,
         )
 
     def _generate_environment_context(self) -> EnvironmentContext:
         """Generate environment context information."""
         return EnvironmentContext(
-            is_business_hours=random.random() > 0.3,
-            is_change_window=random.random() < 0.1,
-            is_holiday=random.random() < 0.05,
-            active_incidents=random.choices(
+            is_business_hours=self._rng.random() > 0.3,
+            is_change_window=self._rng.random() < 0.1,
+            is_holiday=self._rng.random() < 0.05,
+            active_incidents=self._rng.choices(
                 [0, 1, 2, 3, 4, 5], weights=[0.5, 0.25, 0.12, 0.08, 0.03, 0.02]
             )[0],
-            threat_level=random.choices(
+            threat_level=self._rng.choices(
                 ["normal", "elevated", "high", "critical"], weights=[0.7, 0.2, 0.08, 0.02]
             )[0],
-            recent_deployments=random.sample(
+            recent_deployments=self._rng.sample(
                 ["web-app-v2.1", "database-patch", "security-update", "new-feature"],
-                k=random.randint(0, 2),
+                k=self._rng.randint(0, 2),
             ),
         )
 
@@ -849,7 +848,7 @@ class SecurityAlertGenerator:
         if category == AlertCategory.MALWARE:
             return {
                 "file_hash": self._generate_hash("sha256"),
-                "file_name": random.choice(
+                "file_name": self._rng.choice(
                     [
                         "svchost.exe",
                         "update.exe",
@@ -859,7 +858,7 @@ class SecurityAlertGenerator:
                         "winlogon.exe",
                     ]
                 ),
-                "file_path": random.choice(
+                "file_path": self._rng.choice(
                     [
                         "C:\\Users\\Public\\",
                         "C:\\Windows\\Temp\\",
@@ -868,113 +867,113 @@ class SecurityAlertGenerator:
                         "/var/tmp/",
                     ]
                 ),
-                "process_id": random.randint(1000, 65535),
-                "parent_process": random.choice(
+                "process_id": self._rng.randint(1000, 65535),
+                "parent_process": self._rng.choice(
                     ["explorer.exe", "cmd.exe", "powershell.exe", "outlook.exe", "winword.exe"]
                 ),
-                "detection_method": random.choice(
+                "detection_method": self._rng.choice(
                     ["signature", "behavioral", "heuristic", "machine_learning", "sandbox"]
                 ),
-                "malware_family": random.choice(
+                "malware_family": self._rng.choice(
                     AlertTemplates.MALWARE_TEMPLATES["malware_families"]
                 ),
-                "command_line": f"{random.choice(['powershell', 'cmd', 'wscript'])} -enc {self._generate_hash('md5')[:32]}",
+                "command_line": f"{self._rng.choice(['powershell', 'cmd', 'wscript'])} -enc {self._generate_hash('md5')[:32]}",
             }
 
         elif category == AlertCategory.PHISHING:
             return {
-                "sender_email": f"{''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=8))}@{self._generate_domain(suspicious=True)}",
-                "sender_display_name": random.choice(
+                "sender_email": f"{''.join(self._rng.choices('abcdefghijklmnopqrstuvwxyz', k=8))}@{self._generate_domain(suspicious=True)}",
+                "sender_display_name": self._rng.choice(
                     ["IT Support", "HR Department", "CEO Office", "Microsoft Support", "Help Desk"]
                 ),
-                "subject_line": random.choice(
+                "subject_line": self._rng.choice(
                     AlertTemplates.PHISHING_TEMPLATES["subject_lines"]
                 ).format(
-                    invoice_num=random.randint(10000, 99999),
-                    name=random.choice(["John", "HR Team", "Your Manager"]),
-                    phone=f"+1-{random.randint(200,999)}-{random.randint(100,999)}-{random.randint(1000,9999)}",
+                    invoice_num=self._rng.randint(10000, 99999),
+                    name=self._rng.choice(["John", "HR Team", "Your Manager"]),
+                    phone=f"+1-{self._rng.randint(200,999)}-{self._rng.randint(100,999)}-{self._rng.randint(1000,9999)}",
                 ),
-                "urls_count": random.randint(1, 5),
+                "urls_count": self._rng.randint(1, 5),
                 "malicious_urls": [
                     f"https://{self._generate_domain(suspicious=True)}/login"
-                    for _ in range(random.randint(1, 3))
+                    for _ in range(self._rng.randint(1, 3))
                 ],
-                "attachment_count": random.randint(0, 2),
-                "attachment_types": random.sample(
-                    [".docx", ".xlsx", ".pdf", ".html", ".zip"], k=random.randint(0, 2)
+                "attachment_count": self._rng.randint(0, 2),
+                "attachment_types": self._rng.sample(
+                    [".docx", ".xlsx", ".pdf", ".html", ".zip"], k=self._rng.randint(0, 2)
                 ),
-                "is_spoofed": random.choice([True, False]),
-                "spf_result": random.choice(["pass", "fail", "softfail", "none"]),
-                "dkim_result": random.choice(["pass", "fail", "none"]),
+                "is_spoofed": self._rng.choice([True, False]),
+                "spf_result": self._rng.choice(["pass", "fail", "softfail", "none"]),
+                "dkim_result": self._rng.choice(["pass", "fail", "none"]),
             }
 
         elif category == AlertCategory.BRUTE_FORCE:
             return {
-                "failed_attempts": random.randint(10, 10000),
-                "time_window_minutes": random.randint(5, 120),
-                "unique_passwords": random.randint(5, 1000),
-                "source_ips": [self._generate_ip() for _ in range(random.randint(1, 50))],
-                "source_ip_count": random.randint(1, 50),
-                "target_accounts": random.randint(1, 500),
+                "failed_attempts": self._rng.randint(10, 10000),
+                "time_window_minutes": self._rng.randint(5, 120),
+                "unique_passwords": self._rng.randint(5, 1000),
+                "source_ips": [self._generate_ip() for _ in range(self._rng.randint(1, 50))],
+                "source_ip_count": self._rng.randint(1, 50),
+                "target_accounts": self._rng.randint(1, 500),
                 "target_account_list": [
-                    f"user{i}@company.com" for i in range(random.randint(1, 5))
+                    f"user{i}@company.com" for i in range(self._rng.randint(1, 5))
                 ],
-                "successful_auth": random.choice([True, False, False, False]),  # 25% success rate
-                "lockouts_triggered": random.randint(0, 20),
-                "auth_protocol": random.choice(["LDAP", "Kerberos", "NTLM", "OAuth", "SAML"]),
+                "successful_auth": self._rng.choice([True, False, False, False]),  # 25% success rate
+                "lockouts_triggered": self._rng.randint(0, 20),
+                "auth_protocol": self._rng.choice(["LDAP", "Kerberos", "NTLM", "OAuth", "SAML"]),
             }
 
         elif category == AlertCategory.DATA_EXFILTRATION:
             return {
-                "volume_mb": random.randint(100, 100000),
+                "volume_mb": self._rng.randint(100, 100000),
                 "destination_ip": self._generate_ip(),
-                "destination_domain": self._generate_domain(suspicious=random.random() > 0.5),
-                "destination_country": random.choice(["US", "CN", "RU", "GB", "DE", "Unknown"]),
-                "destination_service": random.choice(
+                "destination_domain": self._generate_domain(suspicious=self._rng.random() > 0.5),
+                "destination_country": self._rng.choice(["US", "CN", "RU", "GB", "DE", "Unknown"]),
+                "destination_service": self._rng.choice(
                     ["Dropbox", "Google Drive", "OneDrive", "WeTransfer", "Custom", "Unknown"]
                 ),
-                "file_types": random.sample(
+                "file_types": self._rng.sample(
                     ["pdf", "xlsx", "docx", "zip", "sql", "csv", "pst", "rar"],
-                    k=random.randint(1, 4),
+                    k=self._rng.randint(1, 4),
                 ),
-                "file_count": random.randint(1, 1000),
-                "data_classification": random.choice(
+                "file_count": self._rng.randint(1, 1000),
+                "data_classification": self._rng.choice(
                     ["public", "internal", "confidential", "restricted"]
                 ),
-                "transfer_method": random.choice(["HTTP", "HTTPS", "FTP", "SFTP", "Email", "USB"]),
-                "encryption_detected": random.choice([True, False]),
+                "transfer_method": self._rng.choice(["HTTP", "HTTPS", "FTP", "SFTP", "Email", "USB"]),
+                "encryption_detected": self._rng.choice([True, False]),
             }
 
         elif category == AlertCategory.PRIVILEGE_ESCALATION:
             return {
-                "original_privilege": random.choice(
+                "original_privilege": self._rng.choice(
                     ["user", "guest", "service_account", "standard"]
                 ),
-                "target_privilege": random.choice(
+                "target_privilege": self._rng.choice(
                     ["local_admin", "domain_admin", "system", "root", "enterprise_admin"]
                 ),
-                "technique": random.choice(
+                "technique": self._rng.choice(
                     AlertTemplates.PRIVILEGE_ESCALATION_TEMPLATES["techniques"]
                 ),
-                "mitre_technique": random.choice(
+                "mitre_technique": self._rng.choice(
                     ["T1548", "T1134", "T1068", "T1078", "T1055", "T1574"]
                 ),
-                "success": random.choice([True, False]),
-                "tool_used": random.choice(
+                "success": self._rng.choice([True, False]),
+                "tool_used": self._rng.choice(
                     ["Mimikatz", "Rubeus", "PowerUp", "WinPEAS", "Custom", "Unknown"]
                 ),
-                "target_account": f"admin_{random.randint(1, 100)}",
+                "target_account": f"admin_{self._rng.randint(1, 100)}",
             }
 
         elif category == AlertCategory.LATERAL_MOVEMENT:
             return {
-                "source_host": f"WS-{random.randint(100, 999)}",
+                "source_host": f"WS-{self._rng.randint(100, 999)}",
                 "destination_hosts": [
-                    f"SRV-{random.randint(10, 99)}" for _ in range(random.randint(1, 10))
+                    f"SRV-{self._rng.randint(10, 99)}" for _ in range(self._rng.randint(1, 10))
                 ],
-                "destination_count": random.randint(1, 10),
-                "protocol": random.choice(["SMB", "WMI", "RDP", "WinRM", "SSH", "PSRemoting"]),
-                "credentials_type": random.choice(
+                "destination_count": self._rng.randint(1, 10),
+                "protocol": self._rng.choice(["SMB", "WMI", "RDP", "WinRM", "SSH", "PSRemoting"]),
+                "credentials_type": self._rng.choice(
                     [
                         "pass_the_hash",
                         "pass_the_ticket",
@@ -983,10 +982,10 @@ class SecurityAlertGenerator:
                         "service_account",
                     ]
                 ),
-                "tool_used": random.choice(
+                "tool_used": self._rng.choice(
                     ["PsExec", "WMIExec", "Invoke-Command", "CrackMapExec", "Impacket", "Native"]
                 ),
-                "mitre_technique": random.choice(
+                "mitre_technique": self._rng.choice(
                     ["T1021.001", "T1021.002", "T1021.003", "T1021.004", "T1021.006"]
                 ),
             }
@@ -995,24 +994,24 @@ class SecurityAlertGenerator:
             return {
                 "destination_domain": self._generate_domain(suspicious=True),
                 "destination_ip": self._generate_ip(),
-                "beacon_interval_seconds": random.choice([30, 60, 120, 300, 600, 900, 1800, 3600]),
-                "jitter_percentage": random.randint(0, 50),
-                "protocol": random.choice(["HTTPS", "HTTP", "DNS", "ICMP", "Custom"]),
+                "beacon_interval_seconds": self._rng.choice([30, 60, 120, 300, 600, 900, 1800, 3600]),
+                "jitter_percentage": self._rng.randint(0, 50),
+                "protocol": self._rng.choice(["HTTPS", "HTTP", "DNS", "ICMP", "Custom"]),
                 "c2_framework": (
-                    random.choice(AlertTemplates.C2_TEMPLATES["c2_frameworks"])
-                    if random.random() > 0.5
+                    self._rng.choice(AlertTemplates.C2_TEMPLATES["c2_frameworks"])
+                    if self._rng.random() > 0.5
                     else "Unknown"
                 ),
-                "threat_intel_match": random.choice([True, False]),
-                "data_encoded": random.choice([True, False]),
-                "bytes_sent": random.randint(100, 10000),
-                "bytes_received": random.randint(100, 100000),
+                "threat_intel_match": self._rng.choice([True, False]),
+                "data_encoded": self._rng.choice([True, False]),
+                "bytes_sent": self._rng.randint(100, 10000),
+                "bytes_received": self._rng.randint(100, 100000),
             }
 
         elif category == AlertCategory.INSIDER_THREAT:
             return {
-                "user_risk_score": random.randint(50, 100),
-                "behavior_anomaly": random.choice(
+                "user_risk_score": self._rng.randint(50, 100),
+                "behavior_anomaly": self._rng.choice(
                     [
                         "access_time",
                         "data_volume",
@@ -1022,21 +1021,21 @@ class SecurityAlertGenerator:
                         "pattern_deviation",
                     ]
                 ),
-                "employment_status": random.choice(
+                "employment_status": self._rng.choice(
                     ["active", "notice_period", "terminated", "contractor"]
                 ),
-                "historical_violations": random.randint(0, 5),
-                "data_accessed_classification": random.choice(
+                "historical_violations": self._rng.randint(0, 5),
+                "data_accessed_classification": self._rng.choice(
                     ["internal", "confidential", "restricted"]
                 ),
-                "peer_group_deviation": random.uniform(2.0, 5.0),
-                "resources_accessed": random.randint(10, 500),
-                "after_hours_activity": random.choice([True, False]),
+                "peer_group_deviation": self._rng.uniform(2.0, 5.0),
+                "resources_accessed": self._rng.randint(10, 500),
+                "after_hours_activity": self._rng.choice([True, False]),
             }
 
         elif category == AlertCategory.POLICY_VIOLATION:
             return {
-                "policy_name": random.choice(
+                "policy_name": self._rng.choice(
                     [
                         "Software Installation Policy",
                         "Remote Access Policy",
@@ -1045,7 +1044,7 @@ class SecurityAlertGenerator:
                         "Acceptable Use Policy",
                     ]
                 ),
-                "violation_type": random.choice(
+                "violation_type": self._rng.choice(
                     [
                         "unauthorized_app",
                         "config_drift",
@@ -1054,42 +1053,42 @@ class SecurityAlertGenerator:
                         "data_handling",
                     ]
                 ),
-                "compliance_framework": random.choice(
+                "compliance_framework": self._rng.choice(
                     AlertTemplates.POLICY_VIOLATION_TEMPLATES["frameworks"]
                 ),
-                "remediation_required": random.choice([True, False]),
-                "repeat_violation": random.choice([True, False, False, False]),  # 25% repeat
+                "remediation_required": self._rng.choice([True, False]),
+                "repeat_violation": self._rng.choice([True, False, False, False]),  # 25% repeat
                 "software_name": (
-                    random.choice(
+                    self._rng.choice(
                         ["Dropbox", "TeamViewer", "AnyDesk", "Slack", "WhatsApp", "Unknown"]
                     )
-                    if random.random() > 0.5
+                    if self._rng.random() > 0.5
                     else None
                 ),
             }
 
         elif category == AlertCategory.VULNERABILITY_EXPLOIT:
-            year = random.randint(2020, 2024)
-            cve_num = random.randint(1000, 50000)
+            year = self._rng.randint(2020, 2024)
+            cve_num = self._rng.randint(1000, 50000)
             return {
                 "cve_id": f"CVE-{year}-{cve_num}",
-                "cvss_score": round(random.uniform(4.0, 10.0), 1),
-                "cvss_vector": f"CVSS:3.1/AV:{random.choice(['N', 'A', 'L'])}/AC:{random.choice(['L', 'H'])}/PR:{random.choice(['N', 'L', 'H'])}/UI:{random.choice(['N', 'R'])}/S:{random.choice(['U', 'C'])}/C:{random.choice(['N', 'L', 'H'])}/I:{random.choice(['N', 'L', 'H'])}/A:{random.choice(['N', 'L', 'H'])}",
-                "exploit_type": random.choice(["remote", "local", "network", "web"]),
-                "attack_type": random.choice(
+                "cvss_score": round(self._rng.uniform(4.0, 10.0), 1),
+                "cvss_vector": f"CVSS:3.1/AV:{self._rng.choice(['N', 'A', 'L'])}/AC:{self._rng.choice(['L', 'H'])}/PR:{self._rng.choice(['N', 'L', 'H'])}/UI:{self._rng.choice(['N', 'R'])}/S:{self._rng.choice(['U', 'C'])}/C:{self._rng.choice(['N', 'L', 'H'])}/I:{self._rng.choice(['N', 'L', 'H'])}/A:{self._rng.choice(['N', 'L', 'H'])}",
+                "exploit_type": self._rng.choice(["remote", "local", "network", "web"]),
+                "attack_type": self._rng.choice(
                     AlertTemplates.VULNERABILITY_TEMPLATES["attack_types"]
                 ),
-                "patch_available": random.choice([True, True, True, False]),  # 75% have patches
-                "affected_systems_count": random.randint(1, 100),
-                "exploit_successful": random.choice([True, False]),
-                "affected_service": random.choice(
+                "patch_available": self._rng.choice([True, True, True, False]),  # 75% have patches
+                "affected_systems_count": self._rng.randint(1, 100),
+                "exploit_successful": self._rng.choice([True, False]),
+                "affected_service": self._rng.choice(
                     ["Apache", "Nginx", "IIS", "Tomcat", "Exchange", "SharePoint", "Custom"]
                 ),
             }
 
         elif category == AlertCategory.RECONNAISSANCE:
             return {
-                "scan_type": random.choice(
+                "scan_type": self._rng.choice(
                     [
                         "port_scan",
                         "vulnerability_scan",
@@ -1098,23 +1097,23 @@ class SecurityAlertGenerator:
                         "os_fingerprinting",
                     ]
                 ),
-                "ports_scanned": random.randint(10, 65535),
+                "ports_scanned": self._rng.randint(10, 65535),
                 "source_ip": self._generate_ip(),
-                "duration_minutes": random.randint(1, 120),
-                "hosts_discovered": random.randint(1, 100),
-                "services_identified": random.randint(0, 50),
-                "scan_tool": random.choice(
+                "duration_minutes": self._rng.randint(1, 120),
+                "hosts_discovered": self._rng.randint(1, 100),
+                "services_identified": self._rng.randint(0, 50),
+                "scan_tool": self._rng.choice(
                     ["Nmap", "Masscan", "Nessus", "OpenVAS", "Custom", "Unknown"]
                 ),
-                "stealth_techniques": random.choice([True, False]),
+                "stealth_techniques": self._rng.choice([True, False]),
             }
 
         elif category == AlertCategory.DENIAL_OF_SERVICE:
             return {
-                "attack_type": random.choice(
+                "attack_type": self._rng.choice(
                     ["volumetric", "protocol", "application_layer", "amplification"]
                 ),
-                "attack_vector": random.choice(
+                "attack_vector": self._rng.choice(
                     [
                         "SYN Flood",
                         "UDP Flood",
@@ -1124,13 +1123,13 @@ class SecurityAlertGenerator:
                         "Slowloris",
                     ]
                 ),
-                "traffic_volume_gbps": round(random.uniform(1, 500), 2),
-                "packet_rate_mpps": round(random.uniform(0.1, 100), 2),
-                "source_ip_count": random.randint(100, 1000000),
-                "target_service": random.choice(["web", "api", "dns", "database", "email"]),
-                "target_port": random.choice([80, 443, 53, 25, 3306]),
-                "mitigation_active": random.choice([True, False]),
-                "duration_minutes": random.randint(5, 480),
+                "traffic_volume_gbps": round(self._rng.uniform(1, 500), 2),
+                "packet_rate_mpps": round(self._rng.uniform(0.1, 100), 2),
+                "source_ip_count": self._rng.randint(100, 1000000),
+                "target_service": self._rng.choice(["web", "api", "dns", "database", "email"]),
+                "target_port": self._rng.choice([80, 443, 53, 25, 3306]),
+                "mitigation_active": self._rng.choice([True, False]),
+                "duration_minutes": self._rng.randint(5, 480),
             }
 
         return {}
@@ -1383,7 +1382,7 @@ class SecurityAlertGenerator:
             else:
                 additional_investigation.append("Verify if internal security scan")
                 # Higher chance of false positive for internal scans
-                if random.random() > 0.6:
+                if self._rng.random() > 0.6:
                     decision = TriageDecision.FALSE_POSITIVE
                     key_factors = ["Appears to be authorized internal security scan"]
                     actions = ["Update detection rules to whitelist authorized scanners"]
@@ -1434,7 +1433,7 @@ class SecurityAlertGenerator:
             )
 
         # Small chance of false positive
-        if random.random() < 0.12 and decision not in [TriageDecision.ESCALATE]:
+        if self._rng.random() < 0.12 and decision not in [TriageDecision.ESCALATE]:
             decision = TriageDecision.FALSE_POSITIVE
             confidence_score = 0.88
             key_factors = ["Analysis indicates benign activity matching known patterns"]
@@ -1480,9 +1479,9 @@ class SecurityAlertGenerator:
 
         # Random selection if not specified
         if category is None:
-            category = random.choice(list(AlertCategory))
+            category = self._rng.choice(list(AlertCategory))
         if severity is None:
-            severity = random.choices(list(Severity), weights=[0.05, 0.15, 0.40, 0.30, 0.10])[0]
+            severity = self._rng.choices(list(Severity), weights=[0.05, 0.15, 0.40, 0.30, 0.10])[0]
 
         # Generate contexts
         user_context = self._generate_user_context()
@@ -1504,9 +1503,9 @@ class SecurityAlertGenerator:
         timestamp = (
             datetime.now()
             - timedelta(
-                days=random.randint(0, 30),
-                hours=random.randint(0, 23),
-                minutes=random.randint(0, 59),
+                days=self._rng.randint(0, 30),
+                hours=self._rng.randint(0, 23),
+                minutes=self._rng.randint(0, 59),
             )
         ).isoformat()
 
@@ -1527,20 +1526,20 @@ class SecurityAlertGenerator:
         }
 
         template = template_map.get(category, AlertTemplates.MALWARE_TEMPLATES)
-        source = random.choice(template["sources"])
+        source = self._rng.choice(template["sources"])
 
         # Format title with indicators
-        title_template = random.choice(template["titles"])
+        title_template = self._rng.choice(template["titles"])
         try:
             title = title_template.format(
                 **{
                     **indicators,
                     "department": user_context.department,
                     "source": network_context.source_ip,
-                    "count": indicators.get("failed_attempts", random.randint(10, 100)),
-                    "source_count": indicators.get("source_ip_count", random.randint(1, 50)),
+                    "count": indicators.get("failed_attempts", self._rng.randint(10, 100)),
+                    "source_count": indicators.get("source_ip_count", self._rng.randint(1, 50)),
                     "source_ip": network_context.source_ip,
-                    "target_count": indicators.get("destination_count", random.randint(1, 10)),
+                    "target_count": indicators.get("destination_count", self._rng.randint(1, 10)),
                     "target": asset_context.hostname,
                     "interval": indicators.get("beacon_interval_seconds", 60),
                     "domain": indicators.get("destination_domain", "unknown.com"),
@@ -1552,24 +1551,24 @@ class SecurityAlertGenerator:
                         "@"
                     )[-1],
                     "file_type": (
-                        random.choice(indicators.get("attachment_types", [".pdf"]))
+                        self._rng.choice(indicators.get("attachment_types", [".pdf"]))
                         if indicators.get("attachment_types")
                         else ".pdf"
                     ),
-                    "brand": random.choice(["Microsoft", "Google", "Apple", "Amazon", "LinkedIn"]),
+                    "brand": self._rng.choice(["Microsoft", "Google", "Apple", "Amazon", "LinkedIn"]),
                     "user": user_context.username,
                     "score": indicators.get("user_risk_score", 75),
-                    "resource": random.choice(
+                    "resource": self._rng.choice(
                         ["Finance Share", "HR Database", "Executive Folder", "Source Code"]
                     ),
                     "technique": indicators.get("technique", "unknown"),
-                    "method": random.choice(["fodhelper", "eventvwr", "sdclt"]),
+                    "method": self._rng.choice(["fodhelper", "eventvwr", "sdclt"]),
                     "cve": indicators.get("cve_id", "CVE-2024-0000"),
                     "attack_type": indicators.get("attack_type", "SQL Injection"),
                     "service": indicators.get("affected_service", "web server"),
                     "software": indicators.get("software_name", "unknown application"),
                     "app": indicators.get("software_name", "shadow application"),
-                    "region": random.choice(["EU", "China", "Russia"]),
+                    "region": self._rng.choice(["EU", "China", "Russia"]),
                     "asset": asset_context.hostname,
                     "malware_family": indicators.get("malware_family", "Unknown"),
                     "ports": indicators.get("ports_scanned", 1000),
@@ -1735,7 +1734,7 @@ Provide your triage recommendation with decision, priority, reasoning, and speci
 {chr(10).join(f"- {ioc}" for ioc in triage.ioc_extraction) if triage.ioc_extraction else "- No specific IOCs extracted"}
 
 ### Summary
-This **{alert.severity}** severity **{alert.category.replace('_', ' ')}** alert {"requires immediate escalation to " + triage.escalation_target if triage.escalation_required else "can be handled through standard procedures"}. The affected asset ({alert.asset_context.get('hostname', 'unknown')}) has **{alert.asset_context.get('criticality', 'unknown')}** criticality{" and involves a VIP user, warranting elevated attention" if alert.user_context.get('is_vip') else ""}. {"The organization is currently at elevated threat level, which should factor into response prioritization." if alert.environment_context.get('threat_level') in ['high', 'critical'] else ""}"""
+This **{alert.severity}** severity **{alert.category.replace('_', ' ')}** alert {"requires immediate escalation to " + (triage.escalation_target or "the security team") if triage.escalation_required else "can be handled through standard procedures"}. The affected asset ({alert.asset_context.get('hostname', 'unknown')}) has **{alert.asset_context.get('criticality', 'unknown')}** criticality{" and involves a VIP user, warranting elevated attention" if alert.user_context.get('is_vip') else ""}. {"The organization is currently at elevated threat level, which should factor into response prioritization." if alert.environment_context.get('threat_level') in ['high', 'critical'] else ""}"""
 
         if format_type == "chat":
             return {
@@ -1827,7 +1826,7 @@ This **{alert.severity}** severity **{alert.category.replace('_', ' ')}** alert 
 
                 samples.append(formatted)
 
-        random.shuffle(samples)
+        self._rng.shuffle(samples)
         return samples
 
     def save_dataset(

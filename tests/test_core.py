@@ -320,8 +320,8 @@ class TestTriageEvaluator:
         report = evaluator.generate_report(result)
 
         assert "Decision Accuracy" in report
-        assert "Escalation" in report
-        assert "Priority" in report
+        assert "ESCALATION" in report  # Section header is uppercase
+        assert "PRIORITY" in report  # Section header is uppercase
 
     def test_reset(self, evaluator, sample_predictions):
         """Test resetting evaluator."""
