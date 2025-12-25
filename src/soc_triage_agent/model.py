@@ -609,16 +609,14 @@ Provide your response in a structured format that can be easily parsed and actio
 
         """
         # Validate model is loaded for transformers
-        if self.model_type == "transformers":
-            if self.model is None or self.tokenizer is None:
-                raise ModelNotLoadedError(
-                    "Model or tokenizer not loaded. Use from_pretrained() to load a model."
-                )
-        elif self.model_type in ["openai", "azure"]:
-            if self.api_client is None:
-                raise ModelNotLoadedError(
-                    "API client not initialized. Use from_openai() or from_azure_openai()."
-                )
+        if self.model_type == "transformers" and (self.model is None or self.tokenizer is None):
+            raise ModelNotLoadedError(
+                "Model or tokenizer not loaded. Use from_pretrained() to load a model."
+            )
+        elif self.model_type in ["openai", "azure"] and self.api_client is None:
+            raise ModelNotLoadedError(
+                "API client not initialized. Use from_openai() or from_azure_openai()."
+            )
 
         # Format alert if needed
         try:

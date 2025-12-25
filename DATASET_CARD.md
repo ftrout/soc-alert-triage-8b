@@ -8,7 +8,7 @@ multilinguality:
 - monolingual
 pretty_name: SOC Triage Dataset
 size_categories:
-- 10K<n<100K
+- "10K<n<100K"
 source_datasets:
 - original
 tags:
