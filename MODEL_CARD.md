@@ -141,6 +141,39 @@ print(f"Priority: {prediction.priority}")
 print(f"Actions: {prediction.recommended_actions}")
 ```
 
+### Using with OpenAI API
+
+```python
+from soc_triage_agent import SOCTriageModel
+
+# Option 1: Set environment variable
+# export OPENAI_API_KEY=your-api-key
+
+# Option 2: Pass API key directly
+model = SOCTriageModel.from_openai(
+    model_name="gpt-4",
+    api_key="your-api-key"  # Optional if OPENAI_API_KEY is set
+)
+
+prediction = model.predict(alert)
+```
+
+### Using with Azure OpenAI
+
+```python
+from soc_triage_agent import SOCTriageModel
+
+# Set environment variables (or pass directly):
+# export AZURE_OPENAI_KEY=your-key
+# export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+
+model = SOCTriageModel.from_azure_openai(
+    deployment_name="soc-triage-deployment"
+)
+
+prediction = model.predict(alert)
+```
+
 ## Training
 
 ### Training Data
