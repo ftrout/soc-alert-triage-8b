@@ -1,13 +1,13 @@
-# 🛡️ SOC Triage Agent
+# 🛡️ SOC Triage LLM
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Hugging Face](https://img.shields.io/badge/🤗%20Hugging%20Face-Model-yellow)](https://huggingface.co/fmt0816/soc-triage-agent)
+[![Hugging Face](https://img.shields.io/badge/🤗%20Hugging%20Face-Model-yellow)](https://huggingface.co/fmt0816/soc-triage-llm)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **Fine-tuned language models for automated Security Operations Center (SOC) alert triage.**
 
-SOC Triage Agent helps security analysts by providing consistent, expert-level triage recommendations for security alerts. It analyzes alert details, user context, asset information, and environmental factors to deliver actionable decisions.
+SOC Triage LLM helps security analysts by providing consistent, expert-level triage recommendations for security alerts. It analyzes alert details, user context, asset information, and environmental factors to deliver actionable decisions.
 
 ## ✨ Features
 
@@ -25,8 +25,8 @@ SOC Triage Agent helps security analysts by providing consistent, expert-level t
 
 ```bash
 # Clone the repository
-git clone https://github.com/ftrout/soc-triage-agent.git
-cd soc-triage-agent
+git clone https://github.com/ftrout/soc-triage-llm.git
+cd soc-triage-llm
 
 # Install the package
 pip install -e .
@@ -55,7 +55,7 @@ python scripts/train.py \
     --model_name_or_path meta-llama/Llama-3.1-8B-Instruct \
     --train_file data/train.jsonl \
     --validation_file data/val.jsonl \
-    --output_dir ./outputs/soc-triage-agent \
+    --output_dir ./outputs/soc-triage-llm \
     --use_lora \
     --lora_r 64 \
     --num_train_epochs 3 \
@@ -69,7 +69,7 @@ python scripts/train.py \
 from soc_triage_agent import SOCTriageModel
 
 # Load from Hugging Face
-model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-agent")
+model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-llm")
 
 # Triage an alert
 alert = {
@@ -106,7 +106,7 @@ print(f"Actions: {result.recommended_actions}")
 ## 📁 Project Structure
 
 ```
-soc-triage-agent/
+soc-triage-llm/
 ├── src/soc_triage_agent/
 │   ├── __init__.py           # Package exports
 │   ├── data_generator.py     # Synthetic data generation
@@ -166,7 +166,7 @@ soc-triage-agent/
 ### Hugging Face Hub
 
 ```python
-model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-agent")
+model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-llm")
 ```
 
 ### Azure OpenAI
@@ -182,7 +182,7 @@ model = SOCTriageModel.from_azure_openai(
 
 ```python
 model = SOCTriageModel.from_pretrained(
-    "./outputs/soc-triage-agent",
+    "./outputs/soc-triage-llm",
     load_in_4bit=True,
 )
 ```
@@ -203,11 +203,11 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 ## 📚 Citation
 
 ```bibtex
-@software{soc_triage_agent,
-  title = {SOC Triage Agent: Fine-tuned LLM for Security Alert Triage},
+@software{soc_triage_llm,
+  title = {SOC Triage LLM: Fine-tuned LLM for Security Alert Triage},
   author = {ftrout},
   year = {2025},
-  url = {https://github.com/ftrout/soc-triage-agent}
+  url = {https://github.com/ftrout/soc-triage-llm}
 }
 ```
 

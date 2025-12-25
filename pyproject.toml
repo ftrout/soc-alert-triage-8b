@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "soc-triage-agent"
+name = "soc-triage-llm"
 version = "1.0.0"
 description = "Fine-tuned language models for Security Operations Center alert triage"
 readme = "README.md"
@@ -81,14 +81,14 @@ azure = [
     "openai>=1.12.0",
 ]
 all = [
-    "soc-triage-agent[dev,train,serve,azure]",
+    "soc-triage-llm[dev,train,serve,azure]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/ftrout/soc-triage-agent"
-Documentation = "https://github.com/ftrout/soc-triage-agent#readme"
-Repository = "https://github.com/ftrout/soc-triage-agent"
-Issues = "https://github.com/ftrout/soc-triage-agent/issues"
+Homepage = "https://github.com/ftrout/soc-triage-llm"
+Documentation = "https://github.com/ftrout/soc-triage-llm#readme"
+Repository = "https://github.com/ftrout/soc-triage-llm"
+Issues = "https://github.com/ftrout/soc-triage-llm/issues"
 
 [project.scripts]
 soc-triage-generate = "soc_triage_agent.data_generator:main"

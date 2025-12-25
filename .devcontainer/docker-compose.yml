@@ -1,7 +1,7 @@
 version: '3.8'
 
 # =============================================================================
-# Docker Compose for SOC Triage Agent Training
+# Docker Compose for SOC Triage LLM Training
 # =============================================================================
 # Usage:
 #   docker compose -f .devcontainer/docker-compose.yml up -d
@@ -39,7 +39,7 @@ services:
       - HF_HOME=/workspace/.cache/huggingface
       - HF_TOKEN=${HF_TOKEN:-}
       - WANDB_API_KEY=${WANDB_API_KEY:-}
-      - WANDB_PROJECT=soc-triage-agent
+      - WANDB_PROJECT=soc-triage-llm
       - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-all}
       # Memory optimization
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True

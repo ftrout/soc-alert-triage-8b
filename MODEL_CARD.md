@@ -16,7 +16,7 @@ datasets:
 - fmt0816/soc-triage-dataset
 base_model: meta-llama/Llama-3.1-8B-Instruct
 model-index:
-- name: soc-triage-agent
+- name: soc-triage-llm
   results:
   - task:
       type: text-generation
@@ -39,13 +39,13 @@ model-index:
       name: Escalation Recall
 ---
 
-# SOC Triage Agent
+# SOC Triage LLM
 
 A fine-tuned language model for automated Security Operations Center (SOC) alert triage. This model analyzes security alerts and provides structured triage recommendations including decisions, priority levels, reasoning, and recommended actions.
 
 ## Model Description
 
-SOC Triage Agent is designed to assist security analysts by providing consistent, expert-level triage recommendations for security alerts. It processes alert details including indicators of compromise, user context, asset information, and environmental factors to deliver actionable triage decisions.
+SOC Triage LLM is designed to assist security analysts by providing consistent, expert-level triage recommendations for security alerts. It processes alert details including indicators of compromise, user context, asset information, and environmental factors to deliver actionable triage decisions.
 
 ### Capabilities
 
@@ -86,7 +86,7 @@ pip install transformers torch accelerate
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_id = "fmt0816/soc-triage-agent"
+model_id = "fmt0816/soc-triage-llm"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
 
@@ -124,7 +124,7 @@ print(response)
 from soc_triage_agent import SOCTriageModel
 
 # Load model
-model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-agent")
+model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-llm")
 
 # Triage an alert
 alert = {
@@ -176,7 +176,7 @@ python scripts/train.py \
     --model_name_or_path meta-llama/Llama-3.1-8B-Instruct \
     --train_file data/train.jsonl \
     --validation_file data/val.jsonl \
-    --output_dir ./outputs/soc-triage-agent \
+    --output_dir ./outputs/soc-triage-llm \
     --use_lora \
     --num_train_epochs 3
 ```
@@ -240,11 +240,11 @@ python scripts/train.py \
 ## Citation
 
 ```bibtex
-@software{soc_triage_agent,
-  title = {SOC Triage Agent: Fine-tuned LLM for Security Alert Triage},
+@software{soc_triage_llm,
+  title = {SOC Triage LLM: Fine-tuned LLM for Security Alert Triage},
   author = {ftrout},
   year = {2025},
-  url = {https://huggingface.co/fmt0816/soc-triage-agent}
+  url = {https://huggingface.co/fmt0816/soc-triage-llm}
 }
 ```
 
