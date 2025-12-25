@@ -7,6 +7,7 @@ security triage models from Hugging Face Hub or local files.
 
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -264,9 +265,7 @@ Provide your response in a structured format that can be easily parsed and actio
                 "device_map": device if device != "cpu" else None,
             }
 
-            if load_in_8bit:
-                model_kwargs["load_in_8bit"] = True
-            elif load_in_4bit:
+            if load_in_4bit:
                 try:
                     from transformers import BitsAndBytesConfig
 
@@ -278,6 +277,8 @@ Provide your response in a structured format that can be easily parsed and actio
                     )
                 except ImportError:
                     logger.warning("bitsandbytes not available")
+            elif load_in_8bit:
+                model_kwargs["load_in_8bit"] = True
 
             if use_flash_attention:
                 model_kwargs["attn_implementation"] = "flash_attention_2"
@@ -322,8 +323,6 @@ Provide your response in a structured format that can be easily parsed and actio
             from openai import OpenAI
         except ImportError as err:
             raise ImportError("openai required. Install with: pip install openai") from err
-
-        import os
 
         resolved_api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not resolved_api_key:
@@ -374,8 +373,6 @@ Provide your response in a structured format that can be easily parsed and actio
             from openai import AzureOpenAI
         except ImportError as err:
             raise ImportError("openai required. Install with: pip install openai") from err
-
-        import os
 
         resolved_api_key = api_key or os.getenv("AZURE_OPENAI_KEY")
         resolved_endpoint = endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
