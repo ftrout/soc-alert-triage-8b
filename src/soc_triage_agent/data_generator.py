@@ -1853,22 +1853,22 @@ This **{alert.severity}** severity **{alert.category.replace('_', ' ')}** alert 
             format: File format ("jsonl", "json", "parquet")
 
         """
-        output_path = Path(output_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        path = Path(output_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
 
         if format == "jsonl":
-            with open(output_path, "w") as f:
+            with open(path, "w") as f:
                 for sample in samples:
                     f.write(json.dumps(sample) + "\n")
         elif format == "json":
-            with open(output_path, "w") as f:
+            with open(path, "w") as f:
                 json.dump(samples, f, indent=2)
         elif format == "parquet":
             try:
                 import pandas as pd
 
                 df = pd.DataFrame(samples)
-                df.to_parquet(output_path)
+                df.to_parquet(path)
             except ImportError as err:
                 raise ImportError("pandas and pyarrow required for parquet format") from err
         else:
@@ -1884,11 +1884,14 @@ This **{alert.severity}** severity **{alert.category.replace('_', ' ')}** alert 
             Dictionary of statistics
 
         """
-        stats = {
+        categories: dict[str, int] = {}
+        severities: dict[str, int] = {}
+        decisions: dict[str, int] = {}
+        stats: dict[str, Any] = {
             "total_samples": len(samples),
-            "categories": {},
-            "severities": {},
-            "decisions": {},
+            "categories": categories,
+            "severities": severities,
+            "decisions": decisions,
             "avg_prompt_length": 0,
             "avg_completion_length": 0,
         }
@@ -1905,9 +1908,9 @@ This **{alert.severity}** severity **{alert.category.replace('_', ' ')}** alert 
                 sev = alert.get("severity", "unknown")
                 dec = triage.get("decision", "unknown")
 
-                stats["categories"][cat] = stats["categories"].get(cat, 0) + 1
-                stats["severities"][sev] = stats["severities"].get(sev, 0) + 1
-                stats["decisions"][dec] = stats["decisions"].get(dec, 0) + 1
+                categories[cat] = categories.get(cat, 0) + 1
+                severities[sev] = severities.get(sev, 0) + 1
+                decisions[dec] = decisions.get(dec, 0) + 1
 
             if "messages" in sample:
                 user_msg = sample["messages"][1]["content"]

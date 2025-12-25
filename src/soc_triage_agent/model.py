@@ -119,6 +119,15 @@ Provide your response in a structured format that can be easily parsed and actio
             **kwargs: Additional configuration
 
         """
+        # Initialize all attributes with defaults
+        self.model: Optional[Any] = None
+        self.tokenizer: Optional[Any] = None
+        self.model_type: str = model_type
+        self.device: str = device
+        self.config: dict[str, Any] = kwargs
+        self.api_client: Optional[Any] = None
+        self.api_model_name: Optional[str] = kwargs.get("api_model_name")
+
         # If a string path is passed, load the model
         if isinstance(model_or_path, str):
             loaded = self.from_pretrained(model_or_path, device=device, **kwargs)
@@ -129,17 +138,9 @@ Provide your response in a structured format that can be easily parsed and actio
             self.config = loaded.config
             self.api_client = loaded.api_client
             self.api_model_name = loaded.api_model_name
-            return
-
-        self.model = model_or_path
-        self.tokenizer = tokenizer
-        self.model_type = model_type
-        self.device = device
-        self.config = kwargs
-
-        # For API-based models
-        self.api_client: Optional[Any] = None
-        self.api_model_name: Optional[str] = kwargs.get("api_model_name")
+        else:
+            self.model = model_or_path
+            self.tokenizer = tokenizer
 
     @classmethod
     def from_pretrained(
@@ -215,7 +216,7 @@ Provide your response in a structured format that can be easily parsed and actio
                 try:
                     from transformers import BitsAndBytesConfig
 
-                    model_kwargs["quantization_config"] = BitsAndBytesConfig(
+                    model_kwargs["quantization_config"] = BitsAndBytesConfig(  # type: ignore[assignment]
                         load_in_4bit=True,
                         bnb_4bit_compute_dtype=torch.float16,
                         bnb_4bit_use_double_quant=True,
@@ -240,7 +241,7 @@ Provide your response in a structured format that can be easily parsed and actio
                 from peft import PeftModel
 
                 logger.info(f"Loading adapter from {model_name_or_path}...")
-                model = PeftModel.from_pretrained(model, model_name_or_path)
+                model = PeftModel.from_pretrained(model, model_name_or_path)  # type: ignore[assignment]
                 logger.info("Adapter loaded successfully")
             except ImportError as err:
                 raise ImportError(
@@ -269,7 +270,7 @@ Provide your response in a structured format that can be easily parsed and actio
                 try:
                     from transformers import BitsAndBytesConfig
 
-                    model_kwargs["quantization_config"] = BitsAndBytesConfig(
+                    model_kwargs["quantization_config"] = BitsAndBytesConfig(  # type: ignore[assignment]
                         load_in_4bit=True,
                         bnb_4bit_compute_dtype=torch.float16,
                         bnb_4bit_use_double_quant=True,
@@ -287,7 +288,7 @@ Provide your response in a structured format that can be easily parsed and actio
             )
 
         if device == "cpu":
-            model = model.to("cpu")
+            model = model.to("cpu")  # type: ignore[arg-type]
 
         logger.info(f"Model loaded successfully on {device}")
 
@@ -413,7 +414,7 @@ Provide your response in a structured format that can be easily parsed and actio
         # Handle different alert formats
         if "messages" in alert:
             # Already formatted
-            return alert["messages"][1]["content"]
+            return str(alert["messages"][1]["content"])
 
         prompt = f"""Analyze the following security alert and provide a comprehensive triage recommendation:
 
@@ -669,6 +670,7 @@ Provide your response in a structured format that can be easily parsed and actio
         **kwargs,
     ) -> TriagePrediction:
         """Generate prediction using OpenAI/Azure API."""
+        assert self.api_client is not None  # Validated in predict()
         response = self.api_client.chat.completions.create(
             model=self.api_model_name,
             messages=[
@@ -691,6 +693,9 @@ Provide your response in a structured format that can be easily parsed and actio
         **kwargs,
     ) -> TriagePrediction:
         """Generate prediction using transformers model."""
+        assert self.model is not None  # Validated in predict()
+        assert self.tokenizer is not None  # Validated in predict()
+
         # Format as chat
         messages = [
             {"role": "system", "content": self.SYSTEM_PROMPT},

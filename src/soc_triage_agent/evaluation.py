@@ -34,7 +34,7 @@ class EvaluationResult:
     escalation_f1: float = 0.0
 
     # Per-category metrics
-    category_metrics: dict[str, dict[str, float]] = field(default_factory=dict)
+    category_metrics: dict[str, Any] = field(default_factory=dict)
 
     # Per-decision metrics
     decision_metrics: dict[str, dict[str, float]] = field(default_factory=dict)
@@ -225,7 +225,7 @@ class TriageEvaluator:
 
         # Calculate Spearman correlation
         d_squared = sum((rx - ry) ** 2 for rx, ry in zip(rank_x, rank_y))
-        correlation = 1 - (6 * d_squared) / (n * (n**2 - 1))
+        correlation: float = 1 - (6 * d_squared) / (n * (n**2 - 1))
 
         return correlation
 
