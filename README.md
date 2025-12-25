@@ -169,12 +169,22 @@ soc-triage-llm/
 model = SOCTriageModel.from_pretrained("fmt0816/soc-triage-llm")
 ```
 
+### OpenAI API
+
+```python
+# Set OPENAI_API_KEY environment variable or pass api_key parameter
+model = SOCTriageModel.from_openai(model_name="gpt-4")
+```
+
 ### Azure OpenAI
 
 ```python
+# Set environment variables:
+# export AZURE_OPENAI_KEY=your-key
+# export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+
 model = SOCTriageModel.from_azure_openai(
-    deployment_name="soc-triage-finetuned",
-    endpoint="https://your-resource.openai.azure.com",
+    deployment_name="soc-triage-finetuned"
 )
 ```
 
