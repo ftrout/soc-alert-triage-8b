@@ -15,10 +15,67 @@ Supports:
 import argparse
 import json
 import os
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
 import torch
+
+
+def validate_data_files(train_file: str, validation_file: Optional[str] = None) -> None:
+    """Validate that training data files exist and are valid JSONL.
+
+    Args:
+        train_file: Path to training data file
+        validation_file: Optional path to validation data file
+
+    Raises:
+        FileNotFoundError: If files don't exist
+        ValueError: If files are not valid JSONL
+
+    """
+    train_path = Path(train_file)
+    if not train_path.exists():
+        raise FileNotFoundError(f"Training file not found: {train_file}")
+
+    if not train_path.is_file():
+        raise ValueError(f"Training path is not a file: {train_file}")
+
+    # Validate JSONL format by reading first line
+    try:
+        with open(train_path) as f:
+            first_line = f.readline().strip()
+            if first_line:
+                data = json.loads(first_line)
+                if "messages" not in data and "text" not in data:
+                    raise ValueError(
+                        f"Training file must have 'messages' or 'text' field: {train_file}"
+                    )
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Training file is not valid JSONL: {train_file} - {e}") from e
+
+    if validation_file:
+        val_path = Path(validation_file)
+        if not val_path.exists():
+            raise FileNotFoundError(f"Validation file not found: {validation_file}")
+
+        if not val_path.is_file():
+            raise ValueError(f"Validation path is not a file: {validation_file}")
+
+        try:
+            with open(val_path) as f:
+                first_line = f.readline().strip()
+                if first_line:
+                    json.loads(first_line)
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"Validation file is not valid JSONL: {validation_file} - {e}"
+            ) from e
+
+    print(f"✓ Training file validated: {train_file}")
+    if validation_file:
+        print(f"✓ Validation file validated: {validation_file}")
 from datasets import Dataset
 from transformers import (
     AutoModelForCausalLM,
@@ -309,6 +366,9 @@ def main():
     parser.add_argument("--resume_from_checkpoint", type=str, default=None)
 
     args = parser.parse_args()
+
+    # Validate data files before proceeding
+    validate_data_files(args.train_file, args.validation_file)
 
     # Set seed
     set_seed(args.seed)

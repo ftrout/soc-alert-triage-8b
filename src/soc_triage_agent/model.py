@@ -6,10 +6,38 @@ security triage models from Hugging Face Hub or local files.
 """
 
 import json
+import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional, Union
+
+# Configure module logger
+logger = logging.getLogger(__name__)
+
+
+class TriageModelError(Exception):
+    """Base exception for SOC Triage Model errors."""
+
+    pass
+
+
+class ModelNotLoadedError(TriageModelError):
+    """Raised when attempting inference without a loaded model."""
+
+    pass
+
+
+class InferenceError(TriageModelError):
+    """Raised when model inference fails."""
+
+    pass
+
+
+class ResponseParsingError(TriageModelError):
+    """Raised when response parsing fails."""
+
+    pass
 
 
 @dataclass
@@ -75,12 +103,12 @@ Provide your response in a structured format that can be easily parsed and actio
 
     def __init__(
         self,
-        model_or_path=None,
-        tokenizer=None,
+        model_or_path: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
         model_type: str = "transformers",
         device: str = "auto",
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """Initialize the model wrapper.
 
         Args:
@@ -110,8 +138,8 @@ Provide your response in a structured format that can be easily parsed and actio
         self.config = kwargs
 
         # For API-based models
-        self.api_client = None
-        self.api_model_name = kwargs.get("api_model_name")
+        self.api_client: Optional[Any] = None
+        self.api_model_name: Optional[str] = kwargs.get("api_model_name")
 
     @classmethod
     def from_pretrained(
@@ -421,70 +449,129 @@ Provide your response in a structured format that can be easily parsed and actio
         return prompt
 
     def parse_response(self, response: str) -> TriagePrediction:
-        """Parse model response into structured prediction."""
+        """Parse model response into structured prediction.
+
+        Args:
+            response: Raw model output text
+
+        Returns:
+            TriagePrediction with parsed fields
+
+        Note:
+            Uses sensible defaults when parsing fails. Check raw_output
+            for the original response if needed.
+
+        """
+        if not response or not isinstance(response, str):
+            logger.warning("Empty or invalid response received, using defaults")
+            return TriagePrediction(
+                decision="investigate",
+                priority=3,
+                confidence=0.5,
+                reasoning="Unable to parse model response",
+                recommended_actions=[],
+                escalation_required=False,
+                escalation_target=None,
+                estimated_impact="unknown",
+                raw_output=str(response) if response else "",
+            )
+
         # Default values
         decision = "investigate"
         priority = 3
         confidence = 0.8
         reasoning = ""
-        actions = []
+        actions: list[str] = []
         escalation_required = False
-        escalation_target = None
+        escalation_target: Optional[str] = None
         estimated_impact = "moderate"
+        fields_parsed = 0
 
-        # Parse decision
-        decision_match = re.search(r"\*\*Decision\*\*[:\s|]+(\w+)", response, re.IGNORECASE)
-        if decision_match:
-            decision = decision_match.group(1).lower()
+        try:
+            # Parse decision
+            decision_match = re.search(r"\*\*Decision\*\*[:\s|]+(\w+)", response, re.IGNORECASE)
+            if decision_match:
+                decision = decision_match.group(1).lower()
+                fields_parsed += 1
 
-        # Parse priority
-        priority_match = re.search(r"\*\*Priority\*\*[:\s|]+(\d)", response)
-        if priority_match:
-            priority = int(priority_match.group(1))
+            # Parse priority
+            priority_match = re.search(r"\*\*Priority\*\*[:\s|]+(\d)", response)
+            if priority_match:
+                try:
+                    priority = int(priority_match.group(1))
+                    priority = max(1, min(5, priority))  # Clamp to 1-5
+                    fields_parsed += 1
+                except ValueError:
+                    logger.debug("Failed to parse priority as integer")
 
-        # Parse confidence
-        confidence_match = re.search(r"\*\*Confidence\*\*[:\s|]+(\d+)", response)
-        if confidence_match:
-            confidence = float(confidence_match.group(1)) / 100
+            # Parse confidence
+            confidence_match = re.search(r"\*\*Confidence\*\*[:\s|]+(\d+)", response)
+            if confidence_match:
+                try:
+                    confidence = float(confidence_match.group(1)) / 100
+                    confidence = max(0.0, min(1.0, confidence))  # Clamp to 0-1
+                    fields_parsed += 1
+                except ValueError:
+                    logger.debug("Failed to parse confidence as float")
 
-        # Parse escalation
-        escalation_match = re.search(
-            r"\*\*Escalation Required\*\*[:\s|]+(Yes|No)", response, re.IGNORECASE
-        )
-        if escalation_match:
-            escalation_required = escalation_match.group(1).lower() == "yes"
+            # Parse escalation
+            escalation_match = re.search(
+                r"\*\*Escalation Required\*\*[:\s|]+(Yes|No)", response, re.IGNORECASE
+            )
+            if escalation_match:
+                escalation_required = escalation_match.group(1).lower() == "yes"
+                fields_parsed += 1
 
-        escalation_target_match = re.search(r"\*\*Escalation Target\*\*[:\s|]+([^\n|]+)", response)
-        if escalation_target_match:
-            target = escalation_target_match.group(1).strip()
-            if target.lower() != "n/a":
-                escalation_target = target
+            escalation_target_match = re.search(
+                r"\*\*Escalation Target\*\*[:\s|]+([^\n|]+)", response
+            )
+            if escalation_target_match:
+                target = escalation_target_match.group(1).strip()
+                if target.lower() != "n/a":
+                    escalation_target = target
 
-        # Parse impact
-        impact_match = re.search(r"\*\*Estimated Impact\*\*[:\s|]+(\w+)", response, re.IGNORECASE)
-        if impact_match:
-            estimated_impact = impact_match.group(1).lower()
+            # Parse impact
+            impact_match = re.search(
+                r"\*\*Estimated Impact\*\*[:\s|]+(\w+)", response, re.IGNORECASE
+            )
+            if impact_match:
+                estimated_impact = impact_match.group(1).lower()
+                fields_parsed += 1
 
-        # Parse reasoning section
-        reasoning_match = re.search(r"### Reasoning\n(.+?)(?=###|\Z)", response, re.DOTALL)
-        if reasoning_match:
-            reasoning = reasoning_match.group(1).strip()
-        else:
-            # Try to get key factors
-            factors_match = re.search(r"### Key Factors\n(.+?)(?=###|\Z)", response, re.DOTALL)
-            if factors_match:
-                reasoning = factors_match.group(1).strip()
+            # Parse reasoning section
+            reasoning_match = re.search(r"### Reasoning\n(.+?)(?=###|\Z)", response, re.DOTALL)
+            if reasoning_match:
+                reasoning = reasoning_match.group(1).strip()
+                fields_parsed += 1
+            else:
+                # Try to get key factors
+                factors_match = re.search(
+                    r"### Key Factors\n(.+?)(?=###|\Z)", response, re.DOTALL
+                )
+                if factors_match:
+                    reasoning = factors_match.group(1).strip()
+                    fields_parsed += 1
 
-        # Parse actions
-        actions_match = re.search(r"### Recommended Actions\n(.+?)(?=###|\Z)", response, re.DOTALL)
-        if actions_match:
-            actions_text = actions_match.group(1)
-            for line in actions_text.split("\n"):
-                line = line.strip()
-                if line and (line[0].isdigit() or line.startswith("-")):
-                    action = re.sub(r"^[\d\.\-\s]+", "", line).strip()
-                    if action:
-                        actions.append(action)
+            # Parse actions
+            actions_match = re.search(
+                r"### Recommended Actions\n(.+?)(?=###|\Z)", response, re.DOTALL
+            )
+            if actions_match:
+                actions_text = actions_match.group(1)
+                for line in actions_text.split("\n"):
+                    line = line.strip()
+                    if line and (line[0].isdigit() or line.startswith("-")):
+                        action = re.sub(r"^[\d\.\-\s]+", "", line).strip()
+                        if action:
+                            actions.append(action)
+                if actions:
+                    fields_parsed += 1
+
+            if fields_parsed == 0:
+                logger.warning("No structured fields found in response, using defaults")
+
+        except Exception as e:
+            logger.warning(f"Error parsing response fields: {e}")
 
         return TriagePrediction(
             decision=decision,
@@ -503,7 +590,7 @@ Provide your response in a structured format that can be easily parsed and actio
         alert: Union[dict[str, Any], str],
         max_new_tokens: int = 1024,
         temperature: float = 0.3,
-        **kwargs,
+        **kwargs: Any,
     ) -> TriagePrediction:
         """Generate triage prediction for an alert.
 
@@ -516,14 +603,40 @@ Provide your response in a structured format that can be easily parsed and actio
         Returns:
             TriagePrediction with structured output
 
-        """
-        # Format alert if needed
-        user_message = self.format_alert(alert) if isinstance(alert, dict) else alert
+        Raises:
+            ModelNotLoadedError: If model is not properly loaded
+            InferenceError: If inference fails
 
-        if self.model_type in ["openai", "azure"]:
-            return self._predict_api(user_message, max_new_tokens, temperature, **kwargs)
-        else:
-            return self._predict_transformers(user_message, max_new_tokens, temperature, **kwargs)
+        """
+        # Validate model is loaded for transformers
+        if self.model_type == "transformers":
+            if self.model is None or self.tokenizer is None:
+                raise ModelNotLoadedError(
+                    "Model or tokenizer not loaded. Use from_pretrained() to load a model."
+                )
+        elif self.model_type in ["openai", "azure"]:
+            if self.api_client is None:
+                raise ModelNotLoadedError(
+                    "API client not initialized. Use from_openai() or from_azure_openai()."
+                )
+
+        # Format alert if needed
+        try:
+            user_message = self.format_alert(alert) if isinstance(alert, dict) else alert
+        except Exception as e:
+            logger.error(f"Failed to format alert: {e}")
+            raise InferenceError(f"Failed to format alert: {e}") from e
+
+        try:
+            if self.model_type in ["openai", "azure"]:
+                return self._predict_api(user_message, max_new_tokens, temperature, **kwargs)
+            else:
+                return self._predict_transformers(user_message, max_new_tokens, temperature, **kwargs)
+        except TriageModelError:
+            raise
+        except Exception as e:
+            logger.error(f"Inference failed: {e}")
+            raise InferenceError(f"Inference failed: {e}") from e
 
     def _predict_api(
         self,
