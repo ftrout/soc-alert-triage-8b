@@ -155,6 +155,22 @@ python scripts/train.py \
     --num_train_epochs 3
 ```
 
+### Upload to HuggingFace Hub
+
+```bash
+# Upload trained model
+python scripts/upload_to_hub.py model --model-path ./outputs/kodiak-secops-1
+
+# Upload dataset
+python scripts/upload_to_hub.py dataset --data-path ./data/train.jsonl
+
+# Generate fresh dataset and upload
+python scripts/upload_to_hub.py generate --num-samples 10000
+
+# Dry run (see what would be uploaded)
+python scripts/upload_to_hub.py model --model-path ./outputs/kodiak-secops-1 --dry-run
+```
+
 ## Project Structure
 
 ```
@@ -170,7 +186,8 @@ kodiak-secops-1/
 │   ├── model.py              # Model wrapper and inference
 │   └── evaluation.py         # Evaluation metrics
 ├── scripts/
-│   └── train.py              # Training script
+│   ├── train.py              # Training script
+│   └── upload_to_hub.py      # HuggingFace Hub upload
 ├── configs/
 │   ├── train_lora.yaml       # LoRA training config
 │   └── train_qlora.yaml      # QLoRA training config
