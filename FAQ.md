@@ -245,6 +245,106 @@ QLoRA enables training on consumer GPUs (RTX 3090, RTX 4090).
    tensorboard --logdir ./outputs/my-model
    ```
 
+### What are the training script parameters?
+
+The `scripts/train.py` script accepts the following parameters:
+
+#### Required Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `--model_name_or_path` | Base model to fine-tune (e.g., `meta-llama/Llama-3.1-8B-Instruct`) |
+| `--train_file` | Path to training data file (JSONL format) |
+| `--output_dir` | Directory to save the trained model |
+
+#### Training Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--validation_file` | None | Path to validation data file (JSONL) |
+| `--num_train_epochs` | 3 | Number of training epochs |
+| `--per_device_train_batch_size` | 4 | Batch size per GPU for training |
+| `--per_device_eval_batch_size` | 4 | Batch size per GPU for evaluation |
+| `--gradient_accumulation_steps` | 4 | Steps to accumulate before updating weights |
+| `--learning_rate` | 2e-5 | Initial learning rate |
+| `--warmup_ratio` | 0.1 | Fraction of steps for learning rate warmup |
+| `--max_seq_length` | 4096 | Maximum sequence length (reduce for less memory) |
+| `--gradient_checkpointing` | False | Trade compute for memory (recommended for <32GB VRAM) |
+
+#### LoRA Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--use_lora` | True | Enable LoRA fine-tuning |
+| `--lora_r` | 64 | LoRA rank (lower = less memory, higher = more capacity) |
+| `--lora_alpha` | 128 | LoRA alpha scaling factor (typically 2x lora_r) |
+| `--lora_dropout` | 0.05 | Dropout for LoRA layers |
+| `--use_4bit` | False | Load model in 4-bit precision (QLoRA) |
+| `--use_8bit` | False | Load model in 8-bit precision |
+
+#### Other Options
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--seed` | 42 | Random seed for reproducibility |
+| `--bf16` | True | Use bfloat16 precision (recommended for modern GPUs) |
+| `--logging_steps` | 10 | Log metrics every N steps |
+| `--save_steps` | 500 | Save checkpoint every N steps |
+| `--eval_steps` | 500 | Evaluate every N steps |
+| `--save_total_limit` | 3 | Maximum checkpoints to keep |
+| `--push_to_hub` | False | Push model to HuggingFace Hub after training |
+| `--hub_model_id` | None | HuggingFace Hub model ID (e.g., `username/model-name`) |
+| `--report_to` | tensorboard | Logging backend (tensorboard, wandb, none) |
+| `--resume_from_checkpoint` | None | Path to checkpoint to resume from |
+
+#### Memory Optimization Guide
+
+Choose settings based on your GPU VRAM:
+
+**24GB VRAM (RTX 3090/4090):**
+```bash
+python scripts/train.py \
+    --use_lora \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 8 \
+    --gradient_checkpointing \
+    --max_seq_length 2048
+```
+
+**16GB VRAM (RTX 4080/A4000):**
+```bash
+python scripts/train.py \
+    --use_lora \
+    --use_4bit \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 16 \
+    --gradient_checkpointing \
+    --max_seq_length 1024
+```
+
+**12GB VRAM (RTX 3080/4070):**
+```bash
+python scripts/train.py \
+    --use_lora \
+    --use_4bit \
+    --lora_r 32 \
+    --lora_alpha 64 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 16 \
+    --gradient_checkpointing \
+    --max_seq_length 512
+```
+
+#### Understanding Effective Batch Size
+
+Effective batch size = `per_device_train_batch_size` × `gradient_accumulation_steps` × `num_gpus`
+
+For example:
+- Batch size 2 × accumulation 8 × 1 GPU = **effective batch size of 16**
+- Batch size 1 × accumulation 16 × 1 GPU = **effective batch size of 16**
+
+Larger effective batch sizes generally lead to more stable training.
+
 ### What hardware do I need?
 
 | Configuration | GPU | VRAM | Training Time (10K samples) |
