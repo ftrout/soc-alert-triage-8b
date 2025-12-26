@@ -6,6 +6,9 @@ A comprehensive guide to understanding Kodiak SecOps 1, how it works, and how to
 
 ## Table of Contents
 
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Glossary](#glossary)
 - [General Questions](#general-questions)
 - [How It Works](#how-it-works)
 - [Training & Fine-Tuning](#training--fine-tuning)
@@ -13,6 +16,168 @@ A comprehensive guide to understanding Kodiak SecOps 1, how it works, and how to
 - [Deployment & Integration](#deployment--integration)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
+- [Common Mistakes](#common-mistakes)
+- [Step-by-Step Example](#step-by-step-example-training-your-first-model)
+
+---
+
+## Quick Start
+
+New to Kodiak SecOps 1? Here's the 5-minute overview:
+
+### What This Project Does
+
+```
+┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
+│  Security Alert │  →   │  Kodiak SecOps 1 │  →   │ Triage Decision │
+│  (from SIEM)    │      │  (AI Model)      │      │ + Priority      │
+└─────────────────┘      └──────────────────┘      └─────────────────┘
+```
+
+**Input**: A security alert (e.g., "Failed login from unusual IP")
+**Output**: Triage recommendation (e.g., "Investigate, Priority 2, check user's recent activity")
+
+### The Complete Workflow
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        END-TO-END WORKFLOW                               │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  STEP 1: Generate Training Data                                          │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                    │
+│  │  Synthetic  │ + │ Adversarial │ + │  AIT Real   │ = Training Data    │
+│  │   8,000     │   │   1,000     │   │   3,000     │   (12,000 total)   │
+│  └─────────────┘   └─────────────┘   └─────────────┘                    │
+│                                                                          │
+│  STEP 2: Fine-tune the Model                                             │
+│  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐              │
+│  │ Llama 3.1   │  +   │  Training   │  =   │   Kodiak    │              │
+│  │ 8B Base     │      │    Data     │      │  SecOps 1   │              │
+│  └─────────────┘      └─────────────┘      └─────────────┘              │
+│                                                                          │
+│  STEP 3: Deploy & Use                                                    │
+│  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐              │
+│  │    SIEM     │  →   │   Model     │  →   │  Analyst    │              │
+│  │   Alerts    │      │   API       │      │  Dashboard  │              │
+│  └─────────────┘      └─────────────┘      └─────────────┘              │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Quick Commands
+
+```bash
+# 1. Setup (use devcontainer or install manually)
+pip install -e ".[all]"
+
+# 2. Generate training data
+python -m soc_triage_agent.data_generator --num-samples 5000 --output data/train.jsonl
+
+# 3. Train the model (adjust for your GPU)
+python scripts/train.py \
+    --model_name_or_path meta-llama/Llama-3.1-8B-Instruct \
+    --train_file data/train.jsonl \
+    --output_dir ./outputs/kodiak-secops-1 \
+    --use_lora --use_4bit --gradient_checkpointing
+
+# 4. Run the demo
+python app.py
+```
+
+---
+
+## Project Structure
+
+Understanding where everything is:
+
+```
+kodiak-secops-1/
+├── src/soc_triage_agent/          # 📦 Main Python package
+│   ├── __init__.py                #    Package initialization
+│   ├── data_generator.py          #    Creates synthetic training data
+│   ├── adversarial.py             #    Generates challenging edge cases
+│   ├── ait_dataset.py             #    Integrates real IDS alerts
+│   ├── prompts.py                 #    Prompt templates and variants
+│   ├── soar_adapters.py           #    SIEM/SOAR platform integrations
+│   ├── feedback.py                #    Analyst feedback collection
+│   └── evaluation.py              #    Model evaluation metrics
+│
+├── scripts/                       # 🔧 Utility scripts
+│   ├── train.py                   #    Main training script
+│   └── upload_to_hub.py           #    Upload to HuggingFace Hub
+│
+├── configs/                       # ⚙️ Configuration files
+│   ├── train_lora.yaml            #    LoRA training config
+│   └── train_qlora.yaml           #    QLoRA (4-bit) training config
+│
+├── data/                          # 📊 Training data (generated)
+│   ├── train.jsonl                #    Training examples
+│   ├── val.jsonl                  #    Validation examples
+│   └── adversarial.jsonl          #    Adversarial examples
+│
+├── outputs/                       # 📤 Trained models (generated)
+│   └── kodiak-secops-1/           #    Your trained model
+│
+├── app.py                         # 🌐 Gradio web interface
+├── demo.py                        # 💻 CLI demo
+├── pyproject.toml                 # 📋 Project dependencies
+├── Dockerfile                     # 🐳 Container definition
+└── .devcontainer/                 # 🛠️ VS Code dev container
+```
+
+### Key Files Explained
+
+| File | What It Does | When You Use It |
+|------|--------------|-----------------|
+| `data_generator.py` | Creates synthetic security alerts with expert triage decisions | Before training to create your dataset |
+| `adversarial.py` | Generates tricky edge cases to improve model robustness | After basic data generation |
+| `train.py` | Runs the fine-tuning process on your GPU | When you're ready to train |
+| `app.py` | Web UI to test the model interactively | After training to demo/test |
+| `soar_adapters.py` | Connects to XSOAR, Splunk SOAR, etc. | For production integration |
+
+---
+
+## Glossary
+
+Key terms explained for beginners:
+
+### Machine Learning Terms
+
+| Term | Simple Explanation | Analogy |
+|------|-------------------|---------|
+| **LLM** | Large Language Model - AI that understands and generates text | A very well-read assistant |
+| **Fine-tuning** | Teaching a general AI to be an expert in a specific domain | Training a generalist doctor to be a cardiologist |
+| **LoRA** | Efficient fine-tuning that only trains small adapter layers | Adding a specialty module instead of rebuilding the whole brain |
+| **QLoRA** | LoRA with 4-bit compression for less memory usage | Same specialty module, but compressed to fit smaller devices |
+| **Epoch** | One complete pass through all training data | Reading the entire textbook once |
+| **Batch Size** | How many examples to process at once | Studying 4 flashcards at a time vs 16 |
+| **Learning Rate** | How much to adjust the model from each example | Small = careful learning, Large = aggressive learning |
+| **Gradient Checkpointing** | Trade speed for memory by recomputing instead of storing | Recalculating instead of taking notes |
+| **VRAM** | GPU memory (Video RAM) | Your GPU's working memory |
+
+### Security Terms
+
+| Term | Simple Explanation | Example |
+|------|-------------------|---------|
+| **SOC** | Security Operations Center - team that monitors for threats | 24/7 security monitoring team |
+| **SIEM** | Security Information and Event Management - collects logs | Splunk, Microsoft Sentinel, QRadar |
+| **SOAR** | Security Orchestration and Automated Response - automates actions | XSOAR, Splunk SOAR, Tines |
+| **IDS** | Intrusion Detection System - detects attacks | Suricata, Snort, Wazuh |
+| **IOC** | Indicator of Compromise - evidence of attack | Malicious IP, file hash, domain |
+| **Triage** | Prioritizing and categorizing security alerts | ER doctors prioritizing patients |
+| **False Positive** | Alert that looks bad but isn't actually a threat | Fire alarm triggered by burnt toast |
+| **Lateral Movement** | Attacker moving between systems after initial access | Burglar moving room to room |
+| **C2/C&C** | Command and Control - attacker's remote control channel | Puppet master pulling strings |
+
+### Training Data Terms
+
+| Term | Simple Explanation |
+|------|-------------------|
+| **Synthetic Data** | Artificially generated training examples |
+| **Adversarial Examples** | Intentionally tricky cases to challenge the model |
+| **JSONL** | JSON Lines format - one JSON object per line |
+| **Chat Format** | Training data formatted as conversation turns |
 
 ---
 
@@ -664,6 +829,191 @@ model = SOCTriageModel.from_pretrained(
 2. **Data quality issues**: Check for formatting errors in JSONL
 3. **Too few epochs**: Increase `--num_train_epochs`
 4. **LoRA rank too low**: Try `--lora_r 128`
+
+---
+
+## Common Mistakes
+
+Avoid these pitfalls that trip up first-time users:
+
+### Training Mistakes
+
+| Mistake | Why It's Wrong | How to Fix |
+|---------|---------------|------------|
+| Using batch size 4+ on consumer GPU | Causes out-of-memory errors | Use `--per_device_train_batch_size 1` with `--gradient_accumulation_steps 16` |
+| Forgetting `--gradient_checkpointing` | Uses 2x more memory | Always add this flag on GPUs < 48GB |
+| Training without validation data | Can't detect overfitting | Always create a validation set |
+| Using max sequence length 4096 | Wastes memory on short examples | Use `--max_seq_length 1024` or 2048 |
+| Not using `--use_4bit` on smaller GPUs | Won't fit in memory | Add this for GPUs < 20GB |
+
+### Data Generation Mistakes
+
+| Mistake | Why It's Wrong | How to Fix |
+|---------|---------------|------------|
+| Generating only 100 examples | Model won't learn patterns | Generate 5,000+ examples minimum |
+| Not including adversarial data | Model fails on edge cases | Add 10% adversarial examples |
+| Imbalanced categories | Model biased toward common categories | Use `--balanced` flag |
+| Not validating JSONL format | Training will crash | Check file with `python -m json.tool --json-lines data/train.jsonl` |
+
+### Deployment Mistakes
+
+| Mistake | Why It's Wrong | How to Fix |
+|---------|---------------|------------|
+| Trusting model decisions blindly | Models can hallucinate | Always have human review for escalations |
+| Not sanitizing inputs | Prompt injection vulnerability | Clean alert text before inference |
+| Loading full model for inference | Uses unnecessary memory | Use `load_in_4bit=True` or `load_in_8bit=True` |
+| Running on CPU | Extremely slow inference | Use GPU or cloud GPU instance |
+
+### Understanding Training Output
+
+When training, watch for these indicators:
+
+```
+✅ GOOD SIGNS:
+- Training loss decreasing steadily (e.g., 2.5 → 1.8 → 1.2)
+- Validation loss decreasing (not just training loss)
+- No NaN or inf in loss values
+
+❌ BAD SIGNS:
+- Loss stuck at same value → Learning rate too low or data issue
+- Loss exploding (going up) → Learning rate too high
+- Training loss decreasing but val loss increasing → Overfitting
+- NaN loss → Data formatting issue or learning rate too high
+```
+
+### Example Training Run Interpretation
+
+```
+Step 100: loss=2.45, lr=1.8e-05  ← Starting to learn
+Step 200: loss=1.82, lr=1.9e-05  ← Good progress
+Step 300: loss=1.54, lr=2.0e-05  ← Still improving
+Step 400: loss=1.31, lr=1.9e-05  ← Great!
+Step 500: loss=1.28, lr=1.8e-05  ← Converging (slowing down is normal)
+...
+Step 1000: loss=0.95  ← Model is well-trained
+```
+
+### How to Know If Training Worked
+
+After training, test with known examples:
+
+```python
+# Test with obvious cases first
+test_cases = [
+    # Should escalate (obvious threat)
+    {"category": "malware", "severity": "critical",
+     "title": "Ransomware encrypting files"},
+
+    # Should be false positive (obvious benign)
+    {"category": "policy_violation", "severity": "low",
+     "title": "Admin accessed server during maintenance window"},
+]
+
+for case in test_cases:
+    result = model.predict(case)
+    print(f"{case['title']}: {result.decision} (P{result.priority})")
+```
+
+If the model gets obvious cases wrong, more training is needed.
+
+---
+
+## Step-by-Step Example: Training Your First Model
+
+Complete walkthrough for absolute beginners:
+
+### Prerequisites Checklist
+
+- [ ] NVIDIA GPU with 12GB+ VRAM
+- [ ] CUDA installed (`nvidia-smi` should work)
+- [ ] Python 3.10+
+- [ ] HuggingFace account (for downloading Llama)
+- [ ] ~50GB free disk space
+
+### Step 1: Environment Setup (10 minutes)
+
+```bash
+# Clone the repository
+git clone https://github.com/ftrout/kodiak-secops-1.git
+cd kodiak-secops-1
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# OR: venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -e ".[all]"
+
+# Login to HuggingFace (needed for Llama)
+huggingface-cli login
+# Enter your token from https://huggingface.co/settings/tokens
+```
+
+### Step 2: Generate Training Data (5 minutes)
+
+```bash
+# Create data directory
+mkdir -p data
+
+# Generate synthetic training data
+python -m soc_triage_agent.data_generator \
+    --num-samples 5000 \
+    --format chat \
+    --output data/train.jsonl \
+    --balanced
+
+# Generate validation data
+python -m soc_triage_agent.data_generator \
+    --num-samples 500 \
+    --format chat \
+    --output data/val.jsonl \
+    --balanced
+
+# Verify data was created
+wc -l data/*.jsonl
+# Should show: 5000 train.jsonl, 500 val.jsonl
+```
+
+### Step 3: Start Training (2-6 hours depending on GPU)
+
+```bash
+# For RTX 3080/3090/4080/4090 (12-24GB VRAM)
+python scripts/train.py \
+    --model_name_or_path meta-llama/Llama-3.1-8B-Instruct \
+    --train_file data/train.jsonl \
+    --validation_file data/val.jsonl \
+    --output_dir ./outputs/my-first-model \
+    --use_lora \
+    --use_4bit \
+    --lora_r 32 \
+    --lora_alpha 64 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 16 \
+    --gradient_checkpointing \
+    --max_seq_length 1024 \
+    --num_train_epochs 3 \
+    --learning_rate 2e-4 \
+    --logging_steps 10 \
+    --save_steps 500
+
+# Monitor GPU usage in another terminal
+watch -n 1 nvidia-smi
+```
+
+### Step 4: Test Your Model (5 minutes)
+
+```bash
+# Run the web interface
+python app.py --model ./outputs/my-first-model
+
+# Open browser to http://localhost:7860
+# Try entering a sample alert to test
+```
+
+### Step 5: Celebrate! 🎉
+
+You've just fine-tuned a security AI model!
 
 ---
 
