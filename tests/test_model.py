@@ -2,17 +2,17 @@
 Unit tests for SOCTriageModel inference.
 """
 
-import json
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, patch
 
 from soc_triage_agent.model import (
-    SOCTriageModel,
-    TriagePrediction,
-    TriageModelError,
-    ModelNotLoadedError,
     InferenceError,
+    ModelNotLoadedError,
     ResponseParsingError,
+    SOCTriageModel,
+    TriageModelError,
+    TriagePrediction,
 )
 
 
