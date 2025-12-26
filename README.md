@@ -155,6 +155,64 @@ python scripts/train.py \
     --num_train_epochs 3
 ```
 
+### Environment Setup & API Keys
+
+Configure API keys for HuggingFace and experiment tracking:
+
+```bash
+# Required: HuggingFace token (for downloading Llama models)
+export HF_TOKEN="hf_your_token_here"
+# Or login interactively:
+huggingface-cli login
+
+# Optional: Wandb for experiment tracking
+export WANDB_API_KEY="your_wandb_key_here"
+# Or login interactively:
+wandb login
+```
+
+**Using Wandb for Experiment Tracking:**
+
+```bash
+# Enable Wandb logging during training
+python scripts/train.py \
+    --model_name_or_path meta-llama/Llama-3.1-8B-Instruct \
+    --train_file data/train.jsonl \
+    --output_dir ./outputs/kodiak-secops-1 \
+    --use_lora \
+    --report_to wandb  # ← Add this flag
+```
+
+**DevContainer Environment Variables:**
+
+If using the devcontainer, create `.devcontainer/.env` from the example:
+
+```bash
+cp .devcontainer/.env.example .devcontainer/.env
+```
+
+Then edit `.devcontainer/.env`:
+
+```bash
+# .devcontainer/.env
+HF_TOKEN=hf_your_huggingface_token
+WANDB_API_KEY=your_wandb_api_key
+JUPYTER_TOKEN=your_jupyter_token  # Optional
+```
+
+> **Note:** After editing `.env`, restart the devcontainer for changes to take effect.
+
+**Verify API Keys Are Set:**
+
+```bash
+# Check if environment variables are loaded
+echo $HF_TOKEN
+echo $WANDB_API_KEY
+
+# If empty, source them manually
+source .devcontainer/.env
+```
+
 ### Upload to HuggingFace Hub
 
 ```bash
@@ -208,21 +266,31 @@ kodiak-secops-1/
 Generate challenging edge cases to test and improve model robustness:
 
 ```bash
-# Generate adversarial examples
-python -m soc_triage_agent.adversarial generate \
+# Generate adversarial examples (all 8 types auto-included)
+python -m soc_triage_agent.adversarial \
     --num-samples 500 \
-    --types conflicting_signals,near_miss_fp,category_boundary \
-    --output data/adversarial.jsonl
+    --output data/adversarial.jsonl \
+    --format chat
 ```
 
+The generator automatically creates a balanced mix of adversarial types:
+- Conflicting signals (20%) - High severity but benign context
+- Near-miss false positives (15%) - Looks benign but is malicious
+- Priority ambiguous (15%) - Multiple valid priority levels
+- Category boundary (15%) - Could belong to multiple categories
+- Context override (15%) - Context changes the decision
+- Multi-stage attacks (10%) - Part of attack chain
+- Evasion patterns (5%) - Attacker trying to hide
+- Temporal anomalies (5%) - Time-based suspicion
+
 ```python
-from soc_triage_agent import AdversarialGenerator, AdversarialType
+from soc_triage_agent import AdversarialGenerator
 
 generator = AdversarialGenerator()
-hard_cases = generator.generate_hard_cases(
-    num_samples=100,
-    types=[AdversarialType.CONFLICTING_SIGNALS, AdversarialType.NEAR_MISS_FP]
-)
+hard_cases = generator.generate_hard_cases(num_samples=100)
+
+# Convert to training format
+training_data = generator.to_training_format(hard_cases, format_type="chat")
 ```
 
 ### SOAR Platform Integration
