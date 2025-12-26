@@ -17,6 +17,9 @@ Usage:
     # Run with Azure OpenAI
     python app.py --api azure --deployment your-deployment
 
+    # Run minimal interface (for HuggingFace Spaces)
+    python app.py --simple
+
 """
 
 import argparse
@@ -358,8 +361,91 @@ def update_json_from_example(example_name: str) -> str:
     return ""
 
 
+def create_simple_interface() -> gr.Blocks:
+    """Create a minimal Gradio interface for HuggingFace Spaces."""
+    with gr.Blocks(
+        title="Kodiak SecOps 1",
+        theme=gr.themes.Soft(),
+    ) as interface:
+        gr.Markdown(
+            """
+            # Kodiak SecOps 1
+
+            Automated security alert triage powered by fine-tuned language models.
+            Select a sample alert or enter custom JSON to get triage recommendations.
+
+            **Model:** [ftrout/kodiak-secops-1](https://huggingface.co/ftrout/kodiak-secops-1) |
+            **Dataset:** [ftrout/kodiak-secops-1-dataset](https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset)
+            """
+        )
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                example_dropdown = gr.Dropdown(
+                    choices=["Custom JSON"] + list(SAMPLE_ALERTS.keys()),
+                    value="Custom JSON",
+                    label="Select Example Alert",
+                )
+                alert_input = gr.Textbox(
+                    label="Alert JSON",
+                    placeholder='{"alert_id": "...", "category": "malware", ...}',
+                    lines=12,
+                )
+                submit_btn = gr.Button("Analyze Alert", variant="primary")
+
+            with gr.Column(scale=1):
+                alert_display = gr.Markdown(label="Alert Details")
+
+        gr.Markdown("---")
+        result_display = gr.Markdown(label="Triage Recommendation")
+
+        # Simple triage function for demo mode
+        def simple_triage(example: str, custom_json: str) -> tuple[str, str]:
+            try:
+                if example != "Custom JSON" and example in SAMPLE_ALERTS:
+                    alert = SAMPLE_ALERTS[example]
+                elif custom_json.strip():
+                    alert = json.loads(custom_json)
+                else:
+                    return "**Error:** Please select an example or enter custom JSON.", ""
+
+                alert_display_text = format_alert_display(alert)
+                result = create_demo_response(alert)
+                return alert_display_text, result
+
+            except json.JSONDecodeError as e:
+                return f"**Error:** Invalid JSON - {e}", ""
+
+        # Event handlers
+        example_dropdown.change(
+            fn=update_json_from_example,
+            inputs=[example_dropdown],
+            outputs=[alert_input],
+        )
+        submit_btn.click(
+            fn=simple_triage,
+            inputs=[example_dropdown, alert_input],
+            outputs=[alert_display, result_display],
+        )
+
+        gr.Markdown(
+            """
+            ---
+            ### About
+
+            This demo showcases rule-based triage logic. For production use, deploy the
+            [full fine-tuned model](https://huggingface.co/ftrout/kodiak-secops-1)
+            for ML-powered analysis.
+
+            *This tool assists security analysts - it does not replace human judgment.*
+            """
+        )
+
+    return interface
+
+
 def create_interface(model: Optional[object]) -> gr.Blocks:
-    """Create the Gradio interface."""
+    """Create the full Gradio interface with model support."""
     with gr.Blocks(
         title="Kodiak SecOps 1",
         theme=gr.themes.Soft(),
@@ -480,14 +566,23 @@ def main():
         default=7860,
         help="Port to run the server on",
     )
+    parser.add_argument(
+        "--simple",
+        action="store_true",
+        help="Use minimal interface (for HuggingFace Spaces)",
+    )
 
     args = parser.parse_args()
 
-    # Load model
-    model = load_model(args.model, args.api, args.deployment)
+    if args.simple:
+        # Simple mode - no model loading, minimal interface
+        logger.info("Running in simple mode (demo only)")
+        interface = create_simple_interface()
+    else:
+        # Full mode with model support
+        model = load_model(args.model, args.api, args.deployment)
+        interface = create_interface(model)
 
-    # Create and launch interface
-    interface = create_interface(model)
     interface.launch(
         server_port=args.port,
         share=args.share,

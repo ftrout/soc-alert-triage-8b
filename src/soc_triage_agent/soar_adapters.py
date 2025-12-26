@@ -342,7 +342,7 @@ class XSOARAdapter(SOARAdapter):
         )
         response.raise_for_status()
 
-        return response.json().get("id", "")
+        return str(response.json().get("id", ""))
 
     def _map_severity(self, xsoar_severity: int) -> str:
         """Map XSOAR severity (0-4) to string."""
@@ -382,8 +382,8 @@ class SplunkSOARAdapter(SOARAdapter):
 
         endpoint = f"{self.base_url}/rest/container"
 
-        params = {
-            "page_size": limit,
+        params: dict[str, str] = {
+            "page_size": str(limit),
             "sort": "create_time",
             "order": "desc",
         }
@@ -543,7 +543,12 @@ class WebhookAdapter(SOARAdapter):
         self.secret_key = secret_key
         self.custom_headers = custom_headers or {}
 
-    def fetch_incidents(self, **kwargs) -> list[SOARIncident]:
+    def fetch_incidents(
+        self,
+        limit: int = 100,
+        status: Optional[str] = None,
+        since: Optional[str] = None,
+    ) -> list[SOARIncident]:
         """Not implemented for webhook adapter."""
         raise NotImplementedError("Webhook adapter does not support fetching incidents")
 
@@ -631,7 +636,7 @@ def get_adapter(
         Configured SOARAdapter instance
 
     """
-    adapters = {
+    adapters: dict[str, type[SOARAdapter]] = {
         "xsoar": XSOARAdapter,
         "demisto": XSOARAdapter,
         "splunk_soar": SplunkSOARAdapter,

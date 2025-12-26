@@ -522,10 +522,6 @@ class FeedbackCollector:
             Number of examples exported
 
         """
-        from .data_generator import SecurityAlertGenerator
-
-        generator = SecurityAlertGenerator()
-
         conn = sqlite3.connect(self.storage_path)
         cursor = conn.cursor()
 
@@ -558,12 +554,27 @@ class FeedbackCollector:
                     "estimated_impact": "moderate",
                 }
 
-                # Format for training
-                sample = generator._format_chat(alert, triage)
-                sample["_metadata"] = {
-                    "source": "analyst_correction",
-                    "alert": alert,
-                    "triage": triage,
+                # Format for training (chat format)
+                sample: dict[str, Any] = {
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "You are an expert SOC analyst. Analyze alerts and provide triage decisions.",
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Analyze this alert: {json.dumps(alert)}",
+                        },
+                        {
+                            "role": "assistant",
+                            "content": json.dumps(triage),
+                        },
+                    ],
+                    "_metadata": {
+                        "source": "analyst_correction",
+                        "alert": alert,
+                        "triage": triage,
+                    },
                 }
                 samples.append(sample)
 

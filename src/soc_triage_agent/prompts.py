@@ -19,7 +19,7 @@ Example:
 
 import random
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 
 @dataclass
@@ -411,7 +411,7 @@ class PromptManager:
         }
 
     @classmethod
-    def list_variants(cls) -> list[dict[str, str]]:
+    def list_variants(cls) -> list[dict[str, Any]]:
         """List all available prompt variants."""
         return [
             {
@@ -459,7 +459,7 @@ class PromptManager:
                 by_decision[decision].append(ex)
 
             # Take from each decision type
-            selected = []
+            selected: list[FewShotExample] = []
             decisions = list(by_decision.keys())
             idx = 0
             while len(selected) < count and any(by_decision.values()):
@@ -581,7 +581,7 @@ def run_ab_test(
     model: Any,
     alerts: list[dict[str, Any]],
     variants: Optional[list[str]] = None,
-    metrics_callback: Optional[callable] = None,
+    metrics_callback: Optional[Callable[..., Any]] = None,
 ) -> dict[str, Any]:
     """Run A/B test across prompt variants.
 
@@ -601,7 +601,7 @@ def run_ab_test(
     for variant_name in variants:
         manager = PromptManager(variant=variant_name)
 
-        variant_results = {
+        variant_results: dict[str, Any] = {
             "predictions": [],
             "avg_confidence": 0.0,
             "decision_distribution": {},

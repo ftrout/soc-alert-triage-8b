@@ -15,7 +15,7 @@ Example:
 import random
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, TypedDict, cast
 
 from .data_generator import (
     AlertCategory,
@@ -23,6 +23,17 @@ from .data_generator import (
     Severity,
     TriageDecision,
 )
+
+
+class ScenarioDict(TypedDict):
+    """Type definition for adversarial scenario."""
+
+    category: AlertCategory
+    title: str
+    description: str
+    severity: Severity
+    decision: TriageDecision
+    reason: str
 
 
 class AdversarialType(Enum):
@@ -290,7 +301,8 @@ class AdversarialGenerator:
             ],
         }
 
-        scenario = self._rng.choice(scenarios.get(difficulty, scenarios["medium"]))
+        scenario_list = scenarios.get(difficulty, scenarios["medium"])
+        scenario = cast(ScenarioDict, self._rng.choice(scenario_list))
 
         alert, _ = self._base_generator.generate_alert(
             category=scenario["category"],
@@ -334,21 +346,22 @@ class AdversarialGenerator:
         # Add competing priority factors
         if difficulty == "hard":
             # Add factors that pull in opposite directions
-            alert.environmental_context = {
+            alert.environment_context = {
                 "is_business_hours": False,  # Lower priority
                 "active_incident": True,  # Higher priority
                 "change_window": True,  # Lower priority (expected changes)
                 "threat_intel_match": True,  # Higher priority
             }
-            alert.related_alerts = {
-                "count_24h": 50,  # High volume suggests FP
-                "similar_pattern_count": 3,  # But pattern suggests real
-            }
+            alert.related_alerts = [
+                "ALERT-RELATED-001",
+                "ALERT-RELATED-002",
+                "ALERT-RELATED-003",
+            ]
             # Priority could validly be 1, 2, or 3
             valid_priorities = [1, 2, 3]
 
         elif difficulty == "medium":
-            alert.environmental_context = {
+            alert.environment_context = {
                 "is_business_hours": True,
                 "active_incident": False,
             }
@@ -468,7 +481,7 @@ class AdversarialGenerator:
                 "compliance_scope": ["PCI-DSS", "SOX"],
                 "data_classification": "restricted",
             }
-            alert.environmental_context = {
+            alert.environment_context = {
                 "compliance_audit_active": True,
                 "threat_level": "elevated",
             }
@@ -535,8 +548,14 @@ class AdversarialGenerator:
 
         # Add attack chain context
         if difficulty == "hard":
-            alert.related_alerts = {
-                "count_24h": 5,
+            alert.related_alerts = [
+                "ALERT-CHAIN-001",
+                "ALERT-CHAIN-002",
+                "ALERT-CHAIN-003",
+                "ALERT-CHAIN-004",
+                "ALERT-CHAIN-005",
+            ]
+            alert.environment_context["attack_chain"] = {
                 "chain": [
                     {"category": "reconnaissance", "time": "-4h"},
                     {"category": "brute_force", "time": "-2h"},
@@ -548,22 +567,25 @@ class AdversarialGenerator:
             }
             decision = TriageDecision.ESCALATE
             priority = 1
+            related_count = 5
 
         elif difficulty == "medium":
-            alert.related_alerts = {
-                "count_24h": 3,
-                "similar_pattern_count": 3,
-                "common_source": True,
-            }
+            alert.related_alerts = [
+                "ALERT-RELATED-001",
+                "ALERT-RELATED-002",
+                "ALERT-RELATED-003",
+            ]
+            alert.environment_context["similar_pattern_count"] = 3
+            alert.environment_context["common_source"] = True
             decision = TriageDecision.INVESTIGATE
             priority = 2
+            related_count = 3
 
         else:
-            alert.related_alerts = {
-                "count_24h": 1,
-            }
+            alert.related_alerts = ["ALERT-RELATED-001"]
             decision = TriageDecision.MONITOR
             priority = 3
+            related_count = 1
 
         triage = {
             "decision": decision.value,
@@ -571,7 +593,7 @@ class AdversarialGenerator:
             "escalation_required": decision == TriageDecision.ESCALATE,
             "key_factors": [
                 "Part of multi-stage attack pattern",
-                f"Related alerts in 24h: {alert.related_alerts.get('count_24h')}",
+                f"Related alerts in 24h: {related_count}",
             ],
         }
 
@@ -663,7 +685,7 @@ class AdversarialGenerator:
 
         if difficulty == "hard":
             # 3 AM access by finance user during non-quarter-end
-            alert.environmental_context = {
+            alert.environment_context = {
                 "local_time": "03:15:00",
                 "is_business_hours": False,
                 "is_quarter_end": False,
@@ -680,7 +702,7 @@ class AdversarialGenerator:
 
         elif difficulty == "medium":
             # Weekend access by IT admin during maintenance
-            alert.environmental_context = {
+            alert.environment_context = {
                 "day_of_week": "Saturday",
                 "is_maintenance_window": True,
             }
@@ -693,7 +715,7 @@ class AdversarialGenerator:
             explanation = "Weekend access during maintenance window by on-call admin"
 
         else:
-            alert.environmental_context = {
+            alert.environment_context = {
                 "is_business_hours": True,
             }
             decision = TriageDecision.MONITOR

@@ -343,7 +343,7 @@ class AITDatasetLoader:
         detectors: list[str],
     ) -> list[AITAlert]:
         """Load alerts from a single JSON file."""
-        alerts = []
+        alerts: list[AITAlert] = []
 
         try:
             with open(filepath) as f:
