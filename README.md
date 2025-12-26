@@ -141,6 +141,8 @@ hybrid_data = loader.generate_hybrid_dataset(
 
 ### Train a Model
 
+> **Recommended:** Use the included [devcontainer](.devcontainer/) for training. It comes pre-configured with CUDA, PyTorch, and all dependencies. Open this repo in VS Code or GitHub Codespaces and select "Reopen in Container".
+
 ```bash
 python scripts/train.py \
     --model_name_or_path meta-llama/Llama-3.1-8B-Instruct \
