@@ -42,7 +42,13 @@ logger = logging.getLogger(__name__)
 
 
 # AIT Dataset URLs and metadata
-AIT_ZENODO_URL = "https://zenodo.org/records/8263181/files/ait-alert-dataset.zip"
+# Primary URL (Zenodo API format)
+AIT_ZENODO_URL = "https://zenodo.org/record/8263181/files/ait_ads.zip"
+# Fallback URLs if primary fails
+AIT_ZENODO_FALLBACK_URLS = [
+    "https://zenodo.org/records/8263181/files/ait_ads.zip",
+    "https://zenodo.org/api/records/8263181/files-archive",
+]
 AIT_GITHUB_URL = "https://github.com/ait-aecid/alert-data-set"
 
 # Scenarios available in the AIT dataset
@@ -189,32 +195,42 @@ class AITDatasetLoader:
             Path to the downloaded/extracted data directory
 
         """
-        url = url or AIT_ZENODO_URL
-        zip_path = self.data_dir / "ait-alert-dataset.zip"
+        zip_path = self.data_dir / "ait_ads.zip"
         extracted_dir = self.data_dir / "alerts"
 
         if extracted_dir.exists() and not force:
             logger.info(f"Dataset already exists at {extracted_dir}")
             return extracted_dir
 
-        # Download
-        logger.info(f"Downloading AIT Alert Dataset from {url}")
-        try:
+        # Build list of URLs to try
+        urls_to_try = [url] if url else [AIT_ZENODO_URL] + AIT_ZENODO_FALLBACK_URLS
 
-            def progress_hook(block_num: int, block_size: int, total_size: int) -> None:
-                if total_size > 0:
-                    percent = min(100, block_num * block_size * 100 // total_size)
-                    if block_num % 100 == 0:
-                        logger.info(f"Download progress: {percent}%")
+        def progress_hook(block_num: int, block_size: int, total_size: int) -> None:
+            if total_size > 0:
+                percent = min(100, block_num * block_size * 100 // total_size)
+                if block_num % 100 == 0:
+                    logger.info(f"Download progress: {percent}%")
 
-            urlretrieve(url, zip_path, reporthook=progress_hook)
-            logger.info(f"Downloaded to {zip_path}")
-        except Exception as e:
-            logger.error(f"Failed to download dataset: {e}")
+        # Try each URL until one succeeds
+        last_error: Optional[Exception] = None
+        for try_url in urls_to_try:
+            logger.info(f"Downloading AIT Alert Dataset from {try_url}")
+            try:
+                urlretrieve(try_url, zip_path, reporthook=progress_hook)
+                logger.info(f"Downloaded to {zip_path}")
+                last_error = None
+                break
+            except Exception as e:
+                logger.warning(f"Failed to download from {try_url}: {e}")
+                last_error = e
+                continue
+
+        if last_error is not None:
+            logger.error("Failed to download dataset from all URLs")
             logger.info("You can manually download from:")
-            logger.info(f"  - Zenodo: {AIT_ZENODO_URL}")
+            logger.info("  - Zenodo: https://zenodo.org/records/8263181")
             logger.info(f"  - GitHub: {AIT_GITHUB_URL}")
-            raise
+            raise last_error
 
         # Extract
         logger.info("Extracting dataset...")
@@ -223,6 +239,14 @@ class AITDatasetLoader:
 
         # Clean up zip
         zip_path.unlink()
+
+        # Find the extracted directory (may have different names)
+        possible_dirs = ["alerts", "ait_ads", "data"]
+        for dirname in possible_dirs:
+            check_dir = self.data_dir / dirname
+            if check_dir.exists() and check_dir.is_dir():
+                extracted_dir = check_dir
+                break
 
         logger.info(f"Dataset extracted to {extracted_dir}")
         return extracted_dir
