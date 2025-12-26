@@ -84,8 +84,11 @@ print(f"Actions: {result.recommended_actions}")
 pip install -e ".[demo]"
 python app.py
 
-# Or with a specific model
+# With a specific model
 python app.py --model ftrout/kodiak-secops-1
+
+# Minimal interface (for HuggingFace Spaces)
+python app.py --simple
 ```
 
 ### Generate Training Data
@@ -170,8 +173,7 @@ kodiak-secops-1/
 │   ├── train_lora.yaml       # LoRA training config
 │   └── train_qlora.yaml      # QLoRA training config
 ├── tests/                    # Unit tests
-├── app.py                    # Full Gradio web interface
-├── gradio_demo.py            # Simple Gradio demo (HF Spaces)
+├── app.py                    # Gradio web interface (--simple for HF Spaces)
 ├── demo.py                   # CLI demo
 ├── MODEL_CARD.md             # Hugging Face model card
 ├── DATASET_CARD.md           # Hugging Face dataset card
