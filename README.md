@@ -87,12 +87,49 @@ python app.py --model ftrout/kodiak-secops-1
 ### Generate Training Data
 
 ```bash
+# Generate synthetic training data
 python -m soc_triage_agent.data_generator \
     --num-samples 10000 \
     --format chat \
     --output data/train.jsonl \
     --balanced \
     --include-metadata
+```
+
+### Real-World Data Integration (AIT Dataset)
+
+Kodiak SecOps 1 supports training with real IDS alerts from the [AIT Alert Dataset](https://github.com/ait-aecid/alert-data-set) - 2.6M+ alerts from Wazuh, Suricata, and AMiner.
+
+```bash
+# Download the AIT Alert Dataset
+python -m soc_triage_agent.ait_dataset download
+
+# View dataset statistics
+python -m soc_triage_agent.ait_dataset stats
+
+# Generate hybrid dataset (70% synthetic + 30% real)
+python -m soc_triage_agent.ait_dataset generate \
+    --num-samples 10000 \
+    --real-ratio 0.3 \
+    --output data/hybrid_train.jsonl
+```
+
+Or use the Python API:
+
+```python
+from soc_triage_agent import AITDatasetLoader, SecurityAlertGenerator
+
+# Load real alerts
+loader = AITDatasetLoader()
+loader.download()
+real_alerts = loader.load_alerts(max_alerts=3000)
+
+# Generate hybrid dataset
+hybrid_data = loader.generate_hybrid_dataset(
+    num_samples=10000,
+    real_ratio=0.3,  # 30% real, 70% synthetic
+    format_type="chat",
+)
 ```
 
 ### Train a Model
@@ -116,6 +153,7 @@ kodiak-secops-1/
 ├── src/soc_triage_agent/
 │   ├── __init__.py           # Package exports
 │   ├── data_generator.py     # Synthetic data generation
+│   ├── ait_dataset.py        # AIT real-world dataset integration
 │   ├── model.py              # Model wrapper and inference
 │   └── evaluation.py         # Evaluation metrics
 ├── scripts/

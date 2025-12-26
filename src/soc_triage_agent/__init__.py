@@ -17,6 +17,7 @@ __version__ = "1.0.0"
 __author__ = "SOC Triage Agent Contributors"
 __license__ = "Apache-2.0"
 
+from .ait_dataset import AITDatasetLoader
 from .data_generator import (
     AlertCategory,
     SecurityAlertGenerator,
@@ -28,6 +29,7 @@ from .model import SOCTriageModel
 
 __all__ = [
     "SecurityAlertGenerator",
+    "AITDatasetLoader",
     "AlertCategory",
     "Severity",
     "TriageDecision",

@@ -96,6 +96,7 @@ Issues = "https://github.com/ftrout/kodiak-secops-1/issues"
 [project.scripts]
 soc-triage-generate = "soc_triage_agent.data_generator:main"
 soc-triage-evaluate = "soc_triage_agent.evaluation:main"
+soc-triage-ait = "soc_triage_agent.ait_dataset:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
