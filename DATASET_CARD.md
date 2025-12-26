@@ -231,7 +231,7 @@ All data is synthetically generated. No real security incidents or personal data
 from datasets import load_dataset
 
 # From Hugging Face Hub
-dataset = load_dataset("ftrout/kodiak-secops-1-dataset")
+dataset = load_dataset("fmt0816/kodiak-secops-1-dataset")
 
 # Access splits
 train_data = dataset["train"]
@@ -274,9 +274,9 @@ generator.generate_dataset(format_type="huggingface")
 ```bibtex
 @dataset{kodiak_secops_1_dataset,
   title = {Kodiak SecOps 1 Dataset: Synthetic Security Alerts for ML Training},
-  author = {ftrout},
+  author = {fmt0816},
   year = {2025},
-  url = {https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset},
+  url = {https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset},
   license = {Apache-2.0}
 }
 ```

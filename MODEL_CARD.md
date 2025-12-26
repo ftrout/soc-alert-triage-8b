@@ -20,7 +20,7 @@ tags:
 - function-calling
 - structured-output
 datasets:
-- ftrout/kodiak-secops-1-dataset
+- fmt0816/kodiak-secops-1-dataset
 base_model: meta-llama/Llama-3.1-8B-Instruct
 model-index:
 - name: kodiak-secops-1
@@ -29,7 +29,7 @@ model-index:
       type: text-generation
       name: Security Alert Triage
     dataset:
-      type: ftrout/kodiak-secops-1-dataset
+      type: fmt0816/kodiak-secops-1-dataset
       name: Kodiak SecOps 1 Dataset
     metrics:
     - type: accuracy
@@ -148,7 +148,7 @@ pip install transformers torch accelerate bitsandbytes peft
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_id = "ftrout/kodiak-secops-1"
+model_id = "fmt0816/kodiak-secops-1"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(
     model_id,
@@ -189,7 +189,7 @@ print(response)
 from soc_triage_agent import SOCTriageModel
 
 # Load model with 4-bit quantization
-model = SOCTriageModel.from_pretrained("ftrout/kodiak-secops-1")
+model = SOCTriageModel.from_pretrained("fmt0816/kodiak-secops-1")
 
 # Triage an alert
 alert = {
@@ -340,7 +340,7 @@ The model was trained on synthetic security alert data generated using expert-de
 
 ```bash
 # Clone repository
-git clone https://github.com/ftrout/kodiak-secops-1.git
+git clone https://github.com/fmt0816/kodiak-secops-1.git
 cd kodiak-secops-1
 
 # Install dependencies
@@ -421,9 +421,9 @@ python scripts/train.py \
 ```bibtex
 @software{kodiak_secops_1,
   title = {Kodiak SecOps 1: Fine-tuned LLM for Security Alert Triage},
-  author = {ftrout},
+  author = {fmt0816},
   year = {2025},
-  url = {https://huggingface.co/ftrout/kodiak-secops-1},
+  url = {https://huggingface.co/fmt0816/kodiak-secops-1},
   note = {Fine-tuned on Llama 3.1 8B Instruct using QLoRA}
 }
 ```
@@ -441,6 +441,6 @@ This model is released under the [Apache 2.0 License](https://www.apache.org/lic
 
 ## Links
 
-- **Model**: [huggingface.co/ftrout/kodiak-secops-1](https://huggingface.co/ftrout/kodiak-secops-1)
-- **Dataset**: [huggingface.co/datasets/ftrout/kodiak-secops-1-dataset](https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset)
-- **GitHub**: [github.com/ftrout/kodiak-secops-1](https://github.com/ftrout/kodiak-secops-1)
+- **Model**: [huggingface.co/fmt0816/kodiak-secops-1](https://huggingface.co/fmt0816/kodiak-secops-1)
+- **Dataset**: [huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
+- **GitHub**: [github.com/fmt0816/kodiak-secops-1](https://github.com/fmt0816/kodiak-secops-1)

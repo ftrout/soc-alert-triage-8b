@@ -778,7 +778,7 @@ The generator automatically creates a mix of all 8 adversarial types with predef
 ```python
 from soc_triage_agent import SOCTriageModel
 
-model = SOCTriageModel.from_pretrained("ftrout/kodiak-secops-1")
+model = SOCTriageModel.from_pretrained("fmt0816/kodiak-secops-1")
 
 alert = {
     "category": "lateral_movement",
@@ -797,12 +797,12 @@ print(f"Confidence: {result.confidence}")   # 0.94
 
 **CLI Demo:**
 ```bash
-python demo.py --model ftrout/kodiak-secops-1
+python demo.py --model fmt0816/kodiak-secops-1
 ```
 
 **Web Interface:**
 ```bash
-python app.py --model ftrout/kodiak-secops-1
+python app.py --model fmt0816/kodiak-secops-1
 # Open http://localhost:7860
 ```
 
@@ -815,7 +815,7 @@ We provide adapters for common platforms:
 from soc_triage_agent import get_adapter, SOCTriageModel
 
 adapter = get_adapter("xsoar", "https://xsoar.company.com", api_key="...")
-model = SOCTriageModel.from_pretrained("ftrout/kodiak-secops-1")
+model = SOCTriageModel.from_pretrained("fmt0816/kodiak-secops-1")
 
 for incident in adapter.fetch_incidents(limit=50):
     result = model.predict(incident.to_alert_dict())
@@ -926,7 +926,7 @@ Yes, when deployed correctly:
 **Fix**:
 ```python
 model = SOCTriageModel.from_pretrained(
-    "ftrout/kodiak-secops-1",
+    "fmt0816/kodiak-secops-1",
     temperature=0.1,  # Lower = more consistent
     top_p=0.9
 )
@@ -953,7 +953,7 @@ python scripts/train.py --use_qlora --load_in_4bit
 ```python
 # Load in 8-bit for faster inference
 model = SOCTriageModel.from_pretrained(
-    "ftrout/kodiak-secops-1",
+    "fmt0816/kodiak-secops-1",
     load_in_8bit=True
 )
 ```
@@ -966,7 +966,7 @@ model = SOCTriageModel.from_pretrained(
 ```python
 # Quantize to 4-bit
 model = SOCTriageModel.from_pretrained(
-    "ftrout/kodiak-secops-1",
+    "fmt0816/kodiak-secops-1",
     load_in_4bit=True,
     device_map="auto"
 )
@@ -1084,7 +1084,7 @@ Complete walkthrough for absolute beginners:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ftrout/kodiak-secops-1.git
+git clone https://github.com/fmt0816/kodiak-secops-1.git
 cd kodiak-secops-1
 
 # Create virtual environment
@@ -1169,9 +1169,9 @@ You've just fine-tuned a security AI model!
 
 ## Still Have Questions?
 
-- **Issues**: [GitHub Issues](https://github.com/ftrout/kodiak-secops-1/issues)
-- **Model**: [HuggingFace Model Page](https://huggingface.co/ftrout/kodiak-secops-1)
-- **Dataset**: [HuggingFace Dataset Page](https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset)
+- **Issues**: [GitHub Issues](https://github.com/fmt0816/kodiak-secops-1/issues)
+- **Model**: [HuggingFace Model Page](https://huggingface.co/fmt0816/kodiak-secops-1)
+- **Dataset**: [HuggingFace Dataset Page](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
 
 ---
 

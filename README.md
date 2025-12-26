@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-yellow)](https://huggingface.co/ftrout/kodiak-secops-1)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-yellow)](https://huggingface.co/fmt0816/kodiak-secops-1)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **Fine-tuned Llama 3.1 8B for automated Security Operations Center (SOC) alert triage.**
@@ -27,7 +27,7 @@ Kodiak SecOps 1 helps security analysts by providing consistent, expert-level tr
 
 ```bash
 # Clone the repository
-git clone https://github.com/ftrout/kodiak-secops-1.git
+git clone https://github.com/fmt0816/kodiak-secops-1.git
 cd kodiak-secops-1
 
 # Install the package
@@ -43,7 +43,7 @@ pip install -e ".[all]"
 from soc_triage_agent import SOCTriageModel
 
 # Load from Hugging Face
-model = SOCTriageModel.from_pretrained("ftrout/kodiak-secops-1")
+model = SOCTriageModel.from_pretrained("fmt0816/kodiak-secops-1")
 
 # Triage an alert
 alert = {
@@ -85,7 +85,7 @@ pip install -e ".[demo]"
 python app.py
 
 # With a specific model
-python app.py --model ftrout/kodiak-secops-1
+python app.py --model fmt0816/kodiak-secops-1
 
 # Minimal interface (for HuggingFace Spaces)
 python app.py --simple
@@ -302,7 +302,7 @@ from soc_triage_agent import get_adapter, SOCTriageModel
 
 # Connect to XSOAR
 adapter = get_adapter("xsoar", "https://xsoar.company.com", api_key="...")
-model = SOCTriageModel.from_pretrained("ftrout/kodiak-secops-1")
+model = SOCTriageModel.from_pretrained("fmt0816/kodiak-secops-1")
 
 # Fetch and triage incidents
 for incident in adapter.fetch_incidents(limit=50):
@@ -389,7 +389,7 @@ prompt = manager.build_system_prompt(
 ### Hugging Face Hub
 
 ```python
-model = SOCTriageModel.from_pretrained("ftrout/kodiak-secops-1")
+model = SOCTriageModel.from_pretrained("fmt0816/kodiak-secops-1")
 ```
 
 ### OpenAI API
@@ -438,16 +438,16 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 ```bibtex
 @software{kodiak_secops_1,
   title = {Kodiak SecOps 1: Fine-tuned LLM for Security Alert Triage},
-  author = {ftrout},
+  author = {fmt0816},
   year = {2025},
-  url = {https://github.com/ftrout/kodiak-secops-1}
+  url = {https://github.com/fmt0816/kodiak-secops-1}
 }
 ```
 
 ## Links
 
-- **Model**: [huggingface.co/ftrout/kodiak-secops-1](https://huggingface.co/ftrout/kodiak-secops-1)
-- **Dataset**: [huggingface.co/datasets/ftrout/kodiak-secops-1-dataset](https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset)
+- **Model**: [huggingface.co/fmt0816/kodiak-secops-1](https://huggingface.co/fmt0816/kodiak-secops-1)
+- **Dataset**: [huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
 - **FAQ**: [Frequently Asked Questions](FAQ.md) - Learn how everything works
 
 ---
