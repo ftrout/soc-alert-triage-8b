@@ -6,7 +6,7 @@ language:
 license: apache-2.0
 multilinguality:
 - monolingual
-pretty_name: SOC Triage Dataset
+pretty_name: SOC Alert Triage Dataset
 size_categories:
 - "10K<n<100K"
 source_datasets:
@@ -25,9 +25,9 @@ task_ids:
 - multi-class-classification
 ---
 
-# SOC Triage Dataset
+# SOC Alert Triage Dataset
 
-A synthetic dataset of security alerts with expert-level triage decisions for training security operations models.
+A synthetic dataset of security alerts with expert-level triage decisions for training the SOC Alert Triage 8B model and other security operations models.
 
 ## Dataset Description
 

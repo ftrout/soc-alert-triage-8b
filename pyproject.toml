@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "soc-triage-llm"
+name = "soc-alert-triage-8b"
 version = "1.0.0"
-description = "Fine-tuned language models for Security Operations Center alert triage"
+description = "Fine-tuned Llama 3.1 8B for Security Operations Center alert triage"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
@@ -80,15 +80,18 @@ azure = [
     "azure-identity>=1.15.0",
     "openai>=1.12.0",
 ]
+demo = [
+    "gradio>=4.0.0",
+]
 all = [
-    "soc-triage-llm[dev,train,serve,azure]",
+    "soc-alert-triage-8b[dev,train,serve,azure,demo]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/ftrout/soc-triage-llm"
-Documentation = "https://github.com/ftrout/soc-triage-llm#readme"
-Repository = "https://github.com/ftrout/soc-triage-llm"
-Issues = "https://github.com/ftrout/soc-triage-llm/issues"
+Homepage = "https://github.com/ftrout/soc-alert-triage-8b"
+Documentation = "https://github.com/ftrout/soc-alert-triage-8b#readme"
+Repository = "https://github.com/ftrout/soc-alert-triage-8b"
+Issues = "https://github.com/ftrout/soc-alert-triage-8b/issues"
 
 [project.scripts]
 soc-triage-generate = "soc_triage_agent.data_generator:main"
