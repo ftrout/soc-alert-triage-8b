@@ -9,7 +9,7 @@ Usage:
     python app.py
 
     # Run with local model
-    python app.py --model ftrout/kodiak-secops-1
+    python app.py --model fmt0816/kodiak-secops-1
 
     # Run with OpenAI API
     python app.py --api openai
@@ -374,8 +374,8 @@ def create_simple_interface() -> gr.Blocks:
             Automated security alert triage powered by fine-tuned language models.
             Select a sample alert or enter custom JSON to get triage recommendations.
 
-            **Model:** [ftrout/kodiak-secops-1](https://huggingface.co/ftrout/kodiak-secops-1) |
-            **Dataset:** [ftrout/kodiak-secops-1-dataset](https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset)
+            **Model:** [fmt0816/kodiak-secops-1](https://huggingface.co/fmt0816/kodiak-secops-1) |
+            **Dataset:** [fmt0816/kodiak-secops-1-dataset](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
             """
         )
 
@@ -434,7 +434,7 @@ def create_simple_interface() -> gr.Blocks:
             ### About
 
             This demo showcases rule-based triage logic. For production use, deploy the
-            [full fine-tuned model](https://huggingface.co/ftrout/kodiak-secops-1)
+            [full fine-tuned model](https://huggingface.co/fmt0816/kodiak-secops-1)
             for ML-powered analysis.
 
             *This tool assists security analysts - it does not replace human judgment.*
@@ -522,8 +522,8 @@ def create_interface(model: Optional[object]) -> gr.Blocks:
             including decision (escalate/investigate/monitor/close), priority, reasoning,
             and recommended actions.
 
-            - **Model**: [ftrout/kodiak-secops-1](https://huggingface.co/ftrout/kodiak-secops-1)
-            - **Dataset**: [ftrout/kodiak-secops-1-dataset](https://huggingface.co/datasets/ftrout/kodiak-secops-1-dataset)
+            - **Model**: [fmt0816/kodiak-secops-1](https://huggingface.co/fmt0816/kodiak-secops-1)
+            - **Dataset**: [fmt0816/kodiak-secops-1-dataset](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
             - **GitHub**: [github.com/ftrout/kodiak-secops-1](https://github.com/ftrout/kodiak-secops-1)
 
             *This tool is intended to assist security analysts, not replace human judgment.*

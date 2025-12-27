@@ -27,7 +27,7 @@ Kodiak SecOps 1 helps security analysts by providing consistent, expert-level tr
 
 ```bash
 # Clone the repository
-git clone https://github.com/fmt0816/kodiak-secops-1.git
+git clone https://github.com/ftrout/kodiak-secops-1.git
 cd kodiak-secops-1
 
 # Install the package
@@ -254,7 +254,7 @@ kodiak-secops-1/
 ├── demo.py                   # CLI demo
 ├── MODEL_CARD.md             # Hugging Face model card
 ├── DATASET_CARD.md           # Hugging Face dataset card
-├── CONTRIBUTING.md           # Contribution guidelines
+├── CODE_OF_CONDUCT.md        # Code of conduct
 ├── SECURITY.md               # Security policy
 ├── requirements.txt          # Core dependencies
 ├── pyproject.toml            # Package configuration
@@ -438,9 +438,9 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 ```bibtex
 @software{kodiak_secops_1,
   title = {Kodiak SecOps 1: Fine-tuned LLM for Security Alert Triage},
-  author = {fmt0816},
+  author = {ftrout},
   year = {2025},
-  url = {https://github.com/fmt0816/kodiak-secops-1}
+  url = {https://github.com/ftrout/kodiak-secops-1}
 }
 ```
 

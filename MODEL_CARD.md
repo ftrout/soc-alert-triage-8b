@@ -340,7 +340,7 @@ The model was trained on synthetic security alert data generated using expert-de
 
 ```bash
 # Clone repository
-git clone https://github.com/fmt0816/kodiak-secops-1.git
+git clone https://github.com/ftrout/kodiak-secops-1.git
 cd kodiak-secops-1
 
 # Install dependencies
@@ -443,4 +443,4 @@ This model is released under the [Apache 2.0 License](https://www.apache.org/lic
 
 - **Model**: [huggingface.co/fmt0816/kodiak-secops-1](https://huggingface.co/fmt0816/kodiak-secops-1)
 - **Dataset**: [huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
-- **GitHub**: [github.com/fmt0816/kodiak-secops-1](https://github.com/fmt0816/kodiak-secops-1)
+- **GitHub**: [github.com/ftrout/kodiak-secops-1](https://github.com/ftrout/kodiak-secops-1)

@@ -1084,7 +1084,7 @@ Complete walkthrough for absolute beginners:
 
 ```bash
 # Clone the repository
-git clone https://github.com/fmt0816/kodiak-secops-1.git
+git clone https://github.com/ftrout/kodiak-secops-1.git
 cd kodiak-secops-1
 
 # Create virtual environment
@@ -1169,7 +1169,7 @@ You've just fine-tuned a security AI model!
 
 ## Still Have Questions?
 
-- **Issues**: [GitHub Issues](https://github.com/fmt0816/kodiak-secops-1/issues)
+- **Issues**: [GitHub Issues](https://github.com/ftrout/kodiak-secops-1/issues)
 - **Model**: [HuggingFace Model Page](https://huggingface.co/fmt0816/kodiak-secops-1)
 - **Dataset**: [HuggingFace Dataset Page](https://huggingface.co/datasets/fmt0816/kodiak-secops-1-dataset)
 
